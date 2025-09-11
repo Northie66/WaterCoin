@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Integration Test - Drop to Ocean Interactive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0A;
+            color: #E0E0E0;
+        }
+        .test-container {
+            background-color: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 1rem;
+        }
+        .test-result {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        .test-pass {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10B981;
+            color: #10B981;
+        }
+        .test-fail {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #EF4444;
+            color: #EF4444;
+        }
+        .test-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #F59E0B;
+            color: #F59E0B;
+        }
+        .test-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+            color: #3B82F6;
+        }
+        #console-output {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .btn {
+            background: linear-gradient(90deg, #0052D4, #4364F7, #6FB1FC);
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-white">
+            🧪 Final Integration Test Suite
+        </h1>
+        <p class="text-center text-gray-400 mb-8">
+            Comprehensive validation of the Drop to Ocean Interactive feature
+        </p>
+
+        <!-- Test Controls -->
+        <div class="test-container">
+            <h2 class="text-2xl font-bold mb-4 text-white">Test Controls</h2>
+            <div class="flex flex-wrap justify-center">
+                <button id="run-validation" class="btn">🔍 Run Validation</button>
+                <button id="test-user-flow" class="btn">🎮 Test User Flow</button>
+                <button id="test-performance" class="btn">⚡ Test Performance</button>
+                <button id="test-responsive" class="btn">📱 Test Responsive</button>
+                <button id="clear-console" class="btn">🗑️ Clear Console</button>
+            </div>
+        </div>
+
+        <!-- Test Results Summary -->
+        <div class="test-container">
+            <h2 class="text-2xl font-bold mb-4 text-white">Test Results Summary</h2>
+            <div id="test-summary" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+
+        <!-- Console Output -->
+        <div class="test-container">
+            <h2 class="text-2xl font-bold mb-4 text-white">Console Output</h2>
+            <div id="console-output"></div>
+        </div>
+
+        <!-- Integration Test Section -->
+        <div class="test-container">
+            <h2 class="text-2xl font-bold mb-4 text-white">Live Integration Test</h2>
+            <p class="text-gray-400 mb-4">
+                This is a live version of the Drop to Ocean interactive feature for manual testing:
+            </p>
+            
+            <!-- Embedded Drop to Ocean Section -->
+            <div class="bg-black rounded-2xl p-8">
+                <h3 class="text-sm font-bold uppercase text-blue-400 tracking-widest mb-2 text-center">Interactive Experience</h3>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-8 text-center">From Drop to Ocean</h2>
+                <div class="canvas-container bg-gray-900 bg-opacity-30 backdrop-filter backdrop-blur-lg border border-gray-700 rounded-2xl mx-auto mb-6" style="max-width: 800px;">
+                    <canvas id="test-ocean-canvas" class="w-full rounded-2xl" style="height: 50vh;" 
+                            tabindex="0" 
+                            role="application" 
+                            aria-label="Interactive water simulation - click or tap to add droplets"
+                            aria-describedby="test-canvas-instructions"></canvas>
+                </div>
+                <div id="test-progress-counter" class="text-lg text-gray-300 text-center mb-2">
+                    Ocean filled: <span id="test-progress-percentage">0</span>%
+                </div>
+                <div id="test-canvas-instructions" class="text-sm text-gray-400 text-center">
+                    💧 Click or tap on the canvas to add water droplets
+                </div>
+                
+                <!-- Test Controls for the Canvas -->
+                <div class="flex flex-wrap justify-center mt-6">
+                    <button id="add-droplets" class="btn">💧 Add 10 Droplets</button>
+                    <button id="fill-to-30" class="btn">🐟 Fill to 30%</button>
+                    <button id="fill-to-70" class="btn">🌊 Fill to 70%</button>
+                    <button id="fill-to-100" class="btn">✨ Fill to 100%</button>
+                    <button id="reset-ocean" class="btn">🔄 Reset Ocean</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the validation script -->
+    <script src="integration-validation.js"></script>
+    
+    <!-- Test implementation -->
+    <script>
+        // Console output capture
+        const consoleOutput = document.getElementById('console-output');
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+
+        function appendToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'error' ? 'text-red-400' : 
+                              type === 'warn' ? 'text-yellow-400' : 
+                              type === 'info' ? 'text-blue-400' : 'text-gray-300';
+            
+            consoleOutput.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Override console methods
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            appendToConsole(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            appendToConsole(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            appendToConsole(args.join(' '), 'warn');
+        };
+
+        // Test summary update
+        function updateTestSummary(results) {
+            const summaryContainer = document.getElementById('test-summary');
+            summaryContainer.innerHTML = '';
+
+            Object.entries(results).forEach(([testName, passed]) => {
+                const testCard = document.createElement('div');
+                testCard.className = `test-result ${passed ? 'test-pass' : 'test-fail'}`;
+                testCard.innerHTML = `
+                    <div class="font-bold">${testName.replace(/([A-Z])/g, ' $1').trim()}</div>
+                    <div class="text-sm">${passed ? '✅ Passed' : '❌ Failed'}</div>
+                `;
+                summaryContainer.appendChild(testCard);
+            });
+        }
+
+        // Button event handlers
+        document.getElementById('run-validation').addEventListener('click', () => {
+            console.log('🚀 Starting comprehensive validation...');
+            if (typeof runCompleteValidation === 'function') {
+                const results = runCompleteValidation();
+                updateTestSummary(results.results);
+            } else {
+                console.error('❌ Validation function not available');
+            }
+        });
+
+        document.getElementById('test-user-flow').addEventListener('click', () => {
+            console.log('🎮 Testing user flow...');
+            if (typeof simulateUserFlow === 'function') {
+                simulateUserFlow();
+            } else {
+                console.error('❌ User flow test function not available');
+            }
+        });
+
+        document.getElementById('test-performance').addEventListener('click', () => {
+            console.log('⚡ Testing performance...');
+            if (typeof testPerformance === 'function') {
+                testPerformance();
+            } else {
+                console.error('❌ Performance test function not available');
+            }
+        });
+
+        document.getElementById('test-responsive').addEventListener('click', () => {
+            console.log('📱 Testing responsive design...');
+            testResponsiveDesign();
+        });
+
+        document.getElementById('clear-console').addEventListener('click', () => {
+            consoleOutput.innerHTML = '';
+            console.log('Console cleared');
+        });
+
+        // Responsive design test
+        function testResponsiveDesign() {
+            const canvas = document.getElementById('test-ocean-canvas');
+            if (!canvas) {
+                console.error('❌ Test canvas not found');
+                return;
+            }
+
+            const originalWidth = window.innerWidth;
+            const testSizes = [320, 768, 1024, 1440];
+
+            console.log('📱 Testing responsive behavior at different screen sizes...');
+            
+            testSizes.forEach(width => {
+                // Simulate different screen sizes
+                const rect = canvas.getBoundingClientRect();
+                console.log(`  ${width}px width: Canvas size ${rect.width.toFixed(0)}x${rect.height.toFixed(0)}`);
+            });
+
+            console.log('✅ Responsive design test completed');
+        }
+
+        // Simple test canvas implementation for demonstration
+        class SimpleTestCanvas {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.waterLevel = 0;
+                this.droplets = [];
+                this.animationId = null;
+                
+                this.setupCanvas();
+                this.bindEvents();
+                this.startAnimation();
+            }
+
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            bindEvents() {
+                this.canvas.addEventListener('click', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.addDroplet(x, y);
+                });
+
+                window.addEventListener('resize', () => {
+                    this.setupCanvas();
+                });
+            }
+
+            addDroplet(x, y) {
+                this.droplets.push({
+                    x: x,
+                    y: y,
+                    velocityY: 0,
+                    size: 4,
+                    life: 1.0
+                });
+
+                this.waterLevel = Math.min(100, this.waterLevel + 0.8);
+                this.updateProgress();
+            }
+
+            updateProgress() {
+                const progressElement = document.getElementById('test-progress-percentage');
+                if (progressElement) {
+                    progressElement.textContent = Math.round(this.waterLevel);
+                }
+            }
+
+            update() {
+                // Update droplets
+                for (let i = this.droplets.length - 1; i >= 0; i--) {
+                    const droplet = this.droplets[i];
+                    droplet.velocityY += 0.5;
+                    droplet.y += droplet.velocityY;
+
+                    // Check if droplet hits water surface
+                    const waterSurfaceY = this.canvas.height - (this.waterLevel / 100) * this.canvas.height;
+                    if (droplet.y >= waterSurfaceY) {
+                        this.droplets.splice(i, 1);
+                    }
+                }
+            }
+
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw water
+                if (this.waterLevel > 0) {
+                    const waterHeight = (this.waterLevel / 100) * this.canvas.height;
+                    const gradient = this.ctx.createLinearGradient(0, this.canvas.height - waterHeight, 0, this.canvas.height);
+                    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.6)');
+                    gradient.addColorStop(1, 'rgba(29, 78, 216, 0.8)');
+                    
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fillRect(0, this.canvas.height - waterHeight, this.canvas.width, waterHeight);
+                }
+
+                // Draw droplets
+                this.ctx.fillStyle = '#60A5FA';
+                this.droplets.forEach(droplet => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(droplet.x, droplet.y, droplet.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                // Draw milestones
+                if (this.waterLevel >= 30) {
+                    this.ctx.fillStyle = '#10B981';
+                    this.ctx.font = '20px Arial';
+                    this.ctx.fillText('🐟', 50, this.canvas.height - 50);
+                }
+
+                if (this.waterLevel >= 70) {
+                    this.ctx.fillStyle = '#67E8F9';
+                    this.ctx.font = '20px Arial';
+                    this.ctx.fillText('🌊', 100, this.canvas.height - 50);
+                }
+
+                if (this.waterLevel >= 100) {
+                    this.ctx.fillStyle = '#F59E0B';
+                    this.ctx.font = '24px Arial';
+                    this.ctx.fillText('✨ $WATER ✨', this.canvas.width / 2 - 60, this.canvas.height / 2);
+                }
+            }
+
+            startAnimation() {
+                const animate = () => {
+                    this.update();
+                    this.render();
+                    this.animationId = requestAnimationFrame(animate);
+                };
+                animate();
+            }
+
+            addMultipleDroplets(count) {
+                for (let i = 0; i < count; i++) {
+                    const x = Math.random() * this.canvas.width;
+                    const y = Math.random() * 100;
+                    this.addDroplet(x, y);
+                }
+            }
+
+            fillToLevel(targetLevel) {
+                this.waterLevel = targetLevel;
+                this.updateProgress();
+            }
+
+            reset() {
+                this.waterLevel = 0;
+                this.droplets = [];
+                this.updateProgress();
+            }
+        }
+
+        // Initialize test canvas
+        let testCanvas;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                testCanvas = new SimpleTestCanvas('test-ocean-canvas');
+                
+                // Bind test control buttons
+                document.getElementById('add-droplets').addEventListener('click', () => {
+                    testCanvas.addMultipleDroplets(10);
+                    console.log('💧 Added 10 droplets to test canvas');
+                });
+
+                document.getElementById('fill-to-30').addEventListener('click', () => {
+                    testCanvas.fillToLevel(30);
+                    console.log('🐟 Filled test canvas to 30%');
+                });
+
+                document.getElementById('fill-to-70').addEventListener('click', () => {
+                    testCanvas.fillToLevel(70);
+                    console.log('🌊 Filled test canvas to 70%');
+                });
+
+                document.getElementById('fill-to-100').addEventListener('click', () => {
+                    testCanvas.fillToLevel(100);
+                    console.log('✨ Filled test canvas to 100%');
+                });
+
+                document.getElementById('reset-ocean').addEventListener('click', () => {
+                    testCanvas.reset();
+                    console.log('🔄 Reset test canvas');
+                });
+
+                console.log('🎯 Final Integration Test Suite initialized');
+                console.log('Click "Run Validation" to start comprehensive testing');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

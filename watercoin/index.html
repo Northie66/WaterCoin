@@ -1,0 +1,3346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Coin ($WATER) - Quench the Market's Thirst</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0A;
+            color: #E0E0E0;
+        }
+        .hero-gradient {
+            background: radial-gradient(ellipse at bottom, #0052D4 0%, #0A0A0A 60%);
+        }
+        .btn-gradient {
+            background: linear-gradient(90deg, #0052D4, #4364F7, #6FB1FC);
+            background-size: 200% 200%;
+            transition: background-position 0.5s ease;
+        }
+        .btn-gradient:hover {
+            background-position: right center;
+        }
+        .card-bg {
+            background-color: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3e%3cpath fill='%230A0A0A' fill-opacity='1' d='M0,160L48,181.3C96,203,192,245,288,245.3C384,245,480,203,576,192C672,181,768,203,864,218.7C960,235,1056,245,1152,229.3C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3e%3c/path%3e%3c/svg%3e");
+            background-size: cover;
+            background-repeat: no-repeat;
+            z-index: 5;
+        }
+        /* Animation for fade-in effect */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Ocean canvas specific styles for touch interaction */
+        #ocean-canvas {
+            touch-action: none; /* Prevent default touch behaviors */
+            user-select: none;  /* Prevent text selection */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            cursor: pointer;    /* Show pointer cursor on hover */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+        }
+        
+        /* Canvas container hover effects */
+        .canvas-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 82, 212, 0.15);
+        }
+        
+        /* Canvas container active/touch feedback */
+        .canvas-container:active,
+        .canvas-container.touch-active {
+            transform: translateY(0px) scale(0.995);
+            box-shadow: 0 5px 15px rgba(0, 82, 212, 0.2);
+        }
+        
+        /* Smooth transitions for canvas container */
+        .canvas-container {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        /* Touch ripple effect */
+        .touch-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(103, 232, 249, 0.3) 0%, rgba(103, 232, 249, 0.1) 50%, transparent 100%);
+            pointer-events: none;
+            animation: ripple-animation 0.6s ease-out;
+            z-index: 1;
+        }
+        
+        @keyframes ripple-animation {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Progress counter smooth transitions */
+        #progress-percentage {
+            transition: color 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+            font-weight: 600;
+        }
+        
+        /* Progress counter container styling */
+        #progress-counter {
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Progress counter color states for milestones */
+        #progress-counter.milestone-fish #progress-percentage {
+            color: #60A5FA; /* blue-400 */
+        }
+        
+        #progress-counter.milestone-waves #progress-percentage {
+            color: #67E8F9; /* cyan-300 */
+        }
+        
+        #progress-counter.milestone-complete #progress-percentage {
+            color: #67E8F9; /* cyan-300 */
+            text-shadow: 0 0 10px rgba(103, 232, 249, 0.5);
+        }
+        
+        /* Responsive canvas sizing improvements */
+        @media (max-width: 768px) {
+            #ocean-canvas {
+                height: 50vh !important; /* Slightly smaller on mobile */
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #ocean-canvas {
+                height: 45vh !important; /* Even smaller on very small screens */
+            }
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- Canvas for background particle effect -->
+    <canvas id="particle-canvas" class="fixed top-0 left-0 w-full h-full z-0"></canvas>
+
+    <div class="relative z-10">
+        <!-- Header -->
+        <header class="p-4 md:p-6 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white tracking-tighter">💧 $WATER</h1>
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
+                <a href="#mission" class="hover:text-blue-400 transition-colors">Mission</a>
+                <a href="#flowmap" class="hover:text-blue-400 transition-colors">Flowmap</a>
+                <a href="#drop-to-ocean" class="hover:text-blue-400 transition-colors">Interactive</a>
+                <a href="#community" class="hover:text-blue-400 transition-colors">Community</a>
+            </nav>
+            <a href="#" class="btn-gradient text-white font-bold py-2 px-6 rounded-lg text-sm shadow-lg hover:shadow-blue-500/50 transform hover:scale-105 transition-all">
+                Buy Now
+            </a>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-gradient relative text-center py-24 md:py-40 px-4 overflow-hidden">
+            <div class="absolute inset-0 z-0 opacity-10"></div>
+            <div class="relative z-10">
+                <h2 class="text-4xl md:text-7xl font-extrabold text-white tracking-tighter mb-4 fade-in">The Market is Dry.</h2>
+                <h1 class="text-5xl md:text-8xl font-extrabold text-white tracking-tighter mb-6 fade-in" style="transition-delay: 100ms;">
+                    It's Time for <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">Water Coin.</span>
+                </h1>
+                <p class="max-w-2xl mx-auto text-gray-300 md:text-xl mb-8 fade-in" style="transition-delay: 200ms;">
+                    Tired of barren charts and dusty portfolios? $WATER is here to bring a tidal wave of refreshment to the Solana ecosystem. It's simple, it's pure, it's essential.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4 fade-in" style="transition-delay: 300ms;">
+                    <a href="#" class="btn-gradient text-white font-bold py-4 px-10 rounded-lg text-lg shadow-xl hover:shadow-blue-500/50 transform hover:scale-105 transition-all w-full sm:w-auto">
+                        Quench Your Thirst
+                    </a>
+                </div>
+                 <div class="mt-8 text-xs text-gray-400 fade-in" style="transition-delay: 400ms;">
+                    Contract Address: So11111111111111111111111111111111111111112
+                </div>
+            </div>
+            <div class="wave"></div>
+        </section>
+
+        <!-- Mission Section -->
+        <section id="mission" class="py-20 md:py-32 px-4 bg-[#0A0A0A]">
+            <div class="max-w-5xl mx-auto text-center">
+                <h3 class="text-sm font-bold uppercase text-blue-400 tracking-widest mb-2 fade-in">Our Mission</h3>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-12 fade-in" style="transition-delay: 100ms;">From a Drop to an Ocean.</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Card 1 -->
+                    <div class="card-bg p-8 rounded-2xl text-left fade-in" style="transition-delay: 200ms;">
+                        <div class="text-4xl mb-4">💧</div>
+                        <h4 class="text-xl font-bold text-white mb-2">Pure & Simple</h4>
+                        <p class="text-gray-400 text-sm">
+                            $WATER is designed to be the lifeblood of the Solana chain. No complex mechanics, no confusing promises. Just a clean, refreshing current in a crowded market.
+                        </p>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="card-bg p-8 rounded-2xl text-left fade-in" style="transition-delay: 300ms;">
+                        <div class="text-4xl mb-4">🌊</div>
+                        <h4 class="text-xl font-bold text-white mb-2">Community Driven Flow</h4>
+                        <p class="text-gray-400 text-sm">
+                            Like a river, our strength comes from our source: the community. Every holder contributes to the current, shaping the future of $WATER and making waves across DeFi.
+                        </p>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="card-bg p-8 rounded-2xl text-left fade-in" style="transition-delay: 400ms;">
+                        <div class="text-4xl mb-4">🌍</div>
+                        <h4 class="text-xl font-bold text-white mb-2">Transparent Springs</h4>
+                        <p class="text-gray-400 text-sm">
+                            Our source is crystal clear. With a renounced contract, we're building a foundation of trust. What you see is what you get: pure, unadulterated H₂O.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Flowmap Section (New) -->
+        <section id="flowmap" class="py-20 md:py-32 px-4 bg-black">
+            <div class="max-w-5xl mx-auto text-center">
+                <h3 class="text-sm font-bold uppercase text-blue-400 tracking-widest mb-2 fade-in">Our Journey</h3>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-12 fade-in" style="transition-delay: 100ms;">The Flowmap</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Phase 1 -->
+                    <div class="card-bg p-8 rounded-2xl text-center fade-in" style="transition-delay: 200ms;">
+                        <div class="text-5xl mb-4">🏞️</div>
+                        <h4 class="text-xl font-bold text-white mb-2">Phase 1: The Spring</h4>
+                        <p class="text-gray-400 text-sm">
+                            The initial drop. We launch the token, build the core community, and let the first trickles of $WATER flow onto the Solana blockchain.
+                        </p>
+                    </div>
+                    <!-- Phase 2 -->
+                    <div class="card-bg p-8 rounded-2xl text-center fade-in" style="transition-delay: 300ms;">
+                        <div class="text-5xl mb-4">🌊</div>
+                        <h4 class="text-xl font-bold text-white mb-2">Phase 2: The River</h4>
+                        <p class="text-gray-400 text-sm">
+                            Gaining momentum. We carve our path by flooding social channels, forming partnerships, and creating a current that's impossible to ignore.
+                        </p>
+                    </div>
+                    <!-- Phase 3 -->
+                    <div class="card-bg p-8 rounded-2xl text-center fade-in" style="transition-delay: 400ms;">
+                        <div class="text-5xl mb-4">🌍</div>
+                        <h4 class="text-xl font-bold text-white mb-2">Phase 3: The Ocean</h4>
+                        <p class="text-gray-400 text-sm">
+                            The unstoppable tide. $WATER becomes a global phenomenon, essential to the ecosystem and recognized everywhere. We quench the world's thirst.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Drop to Ocean Interactive Section -->
+        <section id="drop-to-ocean" class="py-20 md:py-32 px-4 bg-[#0A0A0A]">
+            <div class="max-w-5xl mx-auto text-center">
+                <h3 class="text-sm font-bold uppercase text-blue-400 tracking-widest mb-2 fade-in">Interactive Experience</h3>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-12 fade-in" style="transition-delay: 100ms;">From Drop to Ocean</h2>
+                <div class="canvas-container card-bg rounded-2xl mx-auto mb-8 fade-in" style="transition-delay: 200ms;">
+                    <canvas id="ocean-canvas" class="w-full rounded-2xl" style="height: 60vh;" 
+                            tabindex="0" 
+                            role="application" 
+                            aria-label="Interactive water simulation - click or tap to add droplets"
+                            aria-describedby="canvas-instructions"></canvas>
+                </div>
+                <div id="progress-counter" class="text-lg text-gray-300 fade-in" style="transition-delay: 300ms;">
+                    Ocean filled: <span id="progress-percentage">0</span>%
+                </div>
+                <div id="canvas-instructions" class="text-sm text-gray-400 mt-2 fade-in" style="transition-delay: 400ms;">
+                    <span role="img" aria-label="water droplet">💧</span> Click or tap on the canvas to add water droplets. Press Space or Enter when focused to add a droplet at the center.
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Section -->
+        <section id="community" class="py-20 md:py-32 px-4 text-center">
+             <h2 class="text-3xl md:text-5xl font-bold text-white mb-4 fade-in">Join the Current</h2>
+             <p class="max-w-xl mx-auto text-gray-400 mb-8 fade-in" style="transition-delay: 100ms;">
+                 A single drop can start a ripple. Join our community to stay hydrated with the latest updates and help us build an ocean.
+             </p>
+             <div class="flex justify-center items-center gap-4 fade-in" style="transition-delay: 200ms;">
+                <!-- X button only -->
+                <a href="#" class="card-bg h-16 w-16 rounded-full flex items-center justify-center hover:bg-blue-600 transition-all transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
+                    </svg>
+                </a>
+             </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-left p-8 md:px-16 md:py-12 border-t border-gray-900">
+            <div class="max-w-4xl mx-auto space-y-4">
+                <h2 class="text-2xl font-bold text-white tracking-tighter">💧 $WATER</h2>
+                <p class="text-gray-400 text-sm">
+                    The cryptocurrency that's here to hydrate the market. You're early. But that's cool. $WATER is not responsible for any gains, losses, or sudden urges to go swimming. Do your own research — or just enjoy the splash. It's just water anyway.
+                </p>
+                <p class="text-gray-500 text-sm">
+                    Support: contact@thewatercoin.io <span class="text-gray-600">(We read messages in bottles.)</span>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Particle effect script
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray;
+
+        const mouse = {
+            x: null,
+            y: null,
+            radius: (canvas.height / 120) * (canvas.width / 120)
+        }
+
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) {
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX;
+                this.directionY = directionY;
+                this.size = size;
+                this.color = color;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = 'rgba(0, 82, 212, 0.3)';
+                ctx.fill();
+            }
+            update() {
+                if (this.x > canvas.width || this.x < 0) {
+                    this.directionX = -this.directionX;
+                }
+                if (this.y > canvas.height || this.y < 0) {
+                    this.directionY = -this.directionY;
+                }
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius + this.size) {
+                    if (mouse.x < this.x && this.x < canvas.width - this.size * 10) {
+                        this.x += 5;
+                    }
+                    if (mouse.x > this.x && this.x > this.size * 10) {
+                        this.x -= 5;
+                    }
+                    if (mouse.y < this.y && this.y < canvas.height - this.size * 10) {
+                        this.y += 5;
+                    }
+                    if (mouse.y > this.y && this.y > this.size * 10) {
+                        this.y -= 5;
+                    }
+                }
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        function init() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * .4) - .2;
+                let directionY = (Math.random() * .4) - .2;
+                let color = 'rgba(0, 82, 212, 0.3)';
+
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+        }
+
+        init();
+        animate();
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            mouse.radius = ((canvas.height / 120) * (canvas.height / 120));
+            init();
+        });
+
+        // Fade-in animation on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        // Observe all fade-in elements including the drop-to-ocean section
+        const elements = document.querySelectorAll('.fade-in');
+        elements.forEach(el => observer.observe(el));
+
+        // Ocean Canvas Implementation
+        
+        // Performance optimization classes
+        class FrameRateMonitor {
+            constructor() {
+                this.frameCount = 0;
+                this.lastTime = performance.now();
+                this.fps = 60;
+                this.fpsHistory = [];
+                this.maxHistoryLength = 60; // Track last 60 frames
+                this.updateInterval = 1000; // Update FPS every second
+                this.lastFpsUpdate = 0;
+            }
+            
+            update() {
+                const currentTime = performance.now();
+                const deltaTime = currentTime - this.lastTime;
+                
+                if (deltaTime > 0) {
+                    const currentFps = 1000 / deltaTime;
+                    this.fpsHistory.push(currentFps);
+                    
+                    // Keep history within bounds
+                    if (this.fpsHistory.length > this.maxHistoryLength) {
+                        this.fpsHistory.shift();
+                    }
+                    
+                    // Update average FPS periodically
+                    if (currentTime - this.lastFpsUpdate > this.updateInterval) {
+                        this.fps = this.getAverageFps();
+                        this.lastFpsUpdate = currentTime;
+                    }
+                }
+                
+                this.lastTime = currentTime;
+                this.frameCount++;
+            }
+            
+            getAverageFps() {
+                if (this.fpsHistory.length === 0) return 60;
+                
+                const sum = this.fpsHistory.reduce((a, b) => a + b, 0);
+                return sum / this.fpsHistory.length;
+            }
+            
+            getCurrentFps() {
+                return Math.round(this.fps);
+            }
+            
+            isPerformanceLow() {
+                return this.fps < 30; // Consider performance low if below 30 FPS
+            }
+            
+            isPerformanceCritical() {
+                return this.fps < 20; // Critical performance if below 20 FPS
+            }
+        }
+        
+        class PerformanceScaler {
+            constructor() {
+                this.performanceLevel = 1.0; // 1.0 = full performance
+                this.lastAdjustment = 0;
+                this.adjustmentCooldown = 2000; // 2 seconds between adjustments
+                this.minPerformanceLevel = 0.3; // Minimum 30% performance
+            }
+            
+            adjustPerformance(frameRateMonitor) {
+                const currentTime = performance.now();
+                
+                // Only adjust performance every few seconds to avoid oscillation
+                if (currentTime - this.lastAdjustment < this.adjustmentCooldown) {
+                    return this.performanceLevel;
+                }
+                
+                const fps = frameRateMonitor.getCurrentFps();
+                
+                if (frameRateMonitor.isPerformanceCritical()) {
+                    // Drastically reduce performance level
+                    this.performanceLevel = Math.max(this.minPerformanceLevel, this.performanceLevel * 0.6);
+                    console.log('🔥 Critical performance detected, scaling down to:', (this.performanceLevel * 100).toFixed(0) + '%');
+                } else if (frameRateMonitor.isPerformanceLow()) {
+                    // Moderately reduce performance level
+                    this.performanceLevel = Math.max(this.minPerformanceLevel, this.performanceLevel * 0.8);
+                    console.log('⚠️ Low performance detected, scaling down to:', (this.performanceLevel * 100).toFixed(0) + '%');
+                } else if (fps > 50 && this.performanceLevel < 1.0) {
+                    // Gradually increase performance level when FPS is good
+                    this.performanceLevel = Math.min(1.0, this.performanceLevel * 1.1);
+                    console.log('✅ Good performance, scaling up to:', (this.performanceLevel * 100).toFixed(0) + '%');
+                }
+                
+                this.lastAdjustment = currentTime;
+                return this.performanceLevel;
+            }
+            
+            getScaledValue(baseValue) {
+                return Math.max(1, Math.floor(baseValue * this.performanceLevel));
+            }
+            
+            shouldSkipEffect() {
+                // Skip some effects when performance is low
+                return this.performanceLevel < 0.7 && Math.random() > this.performanceLevel;
+            }
+        }
+        
+        class ObjectPool {
+            constructor(createFn, initialSize = 10) {
+                this.createFn = createFn;
+                this.pool = [];
+                this.active = [];
+                
+                // Pre-populate pool
+                for (let i = 0; i < initialSize; i++) {
+                    this.pool.push(this.createFn());
+                }
+            }
+            
+            acquire() {
+                let obj;
+                if (this.pool.length > 0) {
+                    obj = this.pool.pop();
+                } else {
+                    obj = this.createFn();
+                }
+                
+                this.active.push(obj);
+                return obj;
+            }
+            
+            release(obj) {
+                const index = this.active.indexOf(obj);
+                if (index !== -1) {
+                    this.active.splice(index, 1);
+                    
+                    // Reset object properties
+                    this.resetObject(obj);
+                    
+                    // Return to pool if not too large
+                    if (this.pool.length < 50) { // Limit pool size
+                        this.pool.push(obj);
+                    }
+                }
+            }
+            
+            resetObject(obj) {
+                // Reset common properties
+                if (obj.hasOwnProperty('life')) obj.life = 1.0;
+                if (obj.hasOwnProperty('opacity')) obj.opacity = 1.0;
+                if (obj.hasOwnProperty('splashed')) obj.splashed = false;
+                if (obj.hasOwnProperty('created')) obj.created = Date.now();
+                if (obj.hasOwnProperty('particles')) obj.particles = [];
+                if (obj.hasOwnProperty('ripples')) obj.ripples = [];
+            }
+            
+            getActiveCount() {
+                return this.active.length;
+            }
+            
+            getPoolSize() {
+                return this.pool.length;
+            }
+        }
+        
+        // WaterSimulationEngine class for droplet physics and water simulation
+        class WaterSimulationEngine {
+            constructor() {
+                this.waterLevel = 0; // Current water level (0-100)
+                this.droplets = []; // Array of active droplets
+                this.splashEffects = []; // Array of active splash effects
+                this.maxWaterLevel = 100; // Maximum water level percentage
+                this.gravity = 0.5; // Gravity acceleration
+                this.dropletIncrement = 0.8; // Water level increase per droplet
+                this.maxDroplets = 10; // Maximum number of active droplets
+                this.maxSplashEffects = 5; // Maximum number of active splash effects
+                
+                // Performance optimization properties
+                this.frameRateMonitor = new FrameRateMonitor();
+                this.performanceScaler = new PerformanceScaler();
+                this.objectPools = {
+                    droplets: new ObjectPool(() => this.createDropletObject(), 20),
+                    splashEffects: new ObjectPool(() => this.createSplashEffectObject(), 10),
+                    particles: new ObjectPool(() => this.createParticleObject(), 50)
+                };
+                
+                // Performance scaling factors
+                this.currentMaxDroplets = this.maxDroplets;
+                this.currentMaxSplashEffects = this.maxSplashEffects;
+                this.performanceLevel = 1.0; // 1.0 = full performance, 0.5 = reduced
+            }
+            
+            // Object creation methods for object pooling
+            createDropletObject() {
+                return {
+                    x: 0,
+                    y: 0,
+                    velocityX: 0,
+                    velocityY: 0,
+                    size: 4,
+                    life: 1.0,
+                    splashed: false,
+                    created: 0,
+                    splashTime: 0
+                };
+            }
+            
+            createSplashEffectObject() {
+                return {
+                    x: 0,
+                    y: 0,
+                    radius: 2,
+                    maxRadius: 50,
+                    expansionSpeed: 40,
+                    opacity: 0.8,
+                    life: 1.0,
+                    created: 0,
+                    intensity: 1.0,
+                    ripples: [],
+                    particles: []
+                };
+            }
+            
+            createParticleObject() {
+                return {
+                    x: 0,
+                    y: 0,
+                    velocityX: 0,
+                    velocityY: 0,
+                    size: 1,
+                    life: 1.0,
+                    gravity: 0.3,
+                    opacity: 0.7
+                };
+            }
+            
+            addDroplet(x, y) {
+                // Update performance scaling
+                this.updatePerformanceScaling();
+                
+                // Limit the number of active droplets based on performance
+                if (this.droplets.length >= this.currentMaxDroplets) {
+                    // Release oldest droplet back to pool
+                    const oldDroplet = this.droplets.shift();
+                    this.objectPools.droplets.release(oldDroplet);
+                }
+                
+                // Acquire droplet from object pool
+                const droplet = this.objectPools.droplets.acquire();
+                
+                // Initialize droplet properties
+                droplet.x = x;
+                droplet.y = y;
+                droplet.velocityX = (Math.random() - 0.5) * 2; // Small random horizontal velocity
+                droplet.velocityY = 0; // Start with no vertical velocity
+                droplet.size = 4 + Math.random() * 3; // Random size between 4-7 pixels
+                droplet.life = 1.0; // Full life initially
+                droplet.splashed = false; // Not yet splashed
+                droplet.created = Date.now();
+                droplet.splashTime = 0;
+                
+                this.droplets.push(droplet);
+                console.log('Droplet added to simulation at:', Math.round(x), Math.round(y), 'Total droplets:', this.droplets.length, 'Performance level:', (this.performanceLevel * 100).toFixed(0) + '%');
+            }
+            
+            updatePerformanceScaling() {
+                // Update frame rate monitoring
+                this.frameRateMonitor.update();
+                
+                // Adjust performance based on frame rate
+                this.performanceLevel = this.performanceScaler.adjustPerformance(this.frameRateMonitor);
+                
+                // Scale maximum limits based on performance
+                this.currentMaxDroplets = this.performanceScaler.getScaledValue(this.maxDroplets);
+                this.currentMaxSplashEffects = this.performanceScaler.getScaledValue(this.maxSplashEffects);
+            }
+            
+            update(deltaTime, canvasHeight) {
+                // Update performance monitoring
+                this.updatePerformanceScaling();
+                
+                // Convert deltaTime from milliseconds to seconds for physics calculations
+                const dt = Math.min(deltaTime / 1000, 1/30); // Cap at 30fps minimum for stability
+                
+                // Update droplets with physics
+                this.updateDroplets(dt, canvasHeight);
+                
+                // Update splash effects
+                this.updateSplashEffects(dt);
+                
+                // Clean up completed animations
+                this.cleanup();
+            }
+            
+            updateDroplets(dt, canvasHeight) {
+                const waterSurfaceY = canvasHeight - (this.waterLevel / 100) * canvasHeight;
+                
+                this.droplets.forEach((droplet, index) => {
+                    if (droplet.splashed) return; // Skip already splashed droplets
+                    
+                    // Apply gravity to vertical velocity
+                    droplet.velocityY += this.gravity * dt * 60; // Scale for 60fps equivalent
+                    
+                    // Apply air resistance to horizontal velocity
+                    droplet.velocityX *= 0.99;
+                    
+                    // Update position based on velocity
+                    droplet.x += droplet.velocityX * dt * 60;
+                    droplet.y += droplet.velocityY * dt * 60;
+                    
+                    // Check for collision with water surface or bottom
+                    const hitWater = this.waterLevel > 0 && droplet.y + droplet.size >= waterSurfaceY;
+                    const hitBottom = droplet.y + droplet.size >= canvasHeight;
+                    
+                    if (hitWater || hitBottom) {
+                        // Create splash effect at collision point
+                        const splashY = hitWater ? waterSurfaceY : canvasHeight;
+                        this.createSplashEffect(droplet.x, splashY, droplet.velocityY);
+                        
+                        // Mark droplet as splashed
+                        droplet.splashed = true;
+                        droplet.splashTime = Date.now();
+                        
+                        // Increase water level
+                        this.increaseWaterLevel();
+                        
+                        console.log('Droplet splashed at:', Math.round(droplet.x), Math.round(splashY), 'Water level:', this.waterLevel.toFixed(1) + '%');
+                    }
+                    
+                    // Update droplet life based on age
+                    const age = Date.now() - droplet.created;
+                    droplet.life = Math.max(0, 1 - (age / 5000)); // 5 second lifespan
+                });
+            }
+            
+            updateSplashEffects(dt) {
+                this.splashEffects.forEach(effect => {
+                    // Expand main ripple radius
+                    effect.radius += effect.expansionSpeed * dt * 60;
+                    
+                    // Fade out over time
+                    effect.life -= dt * 1.8; // Slightly longer lifespan for better visibility
+                    effect.opacity = Math.max(0, effect.life * 0.6);
+                    
+                    // Update multiple ripple layers
+                    if (effect.ripples) {
+                        effect.ripples.forEach(ripple => {
+                            // Apply delay before ripple starts expanding
+                            if (ripple.delay > 0) {
+                                ripple.delay -= dt;
+                                return;
+                            }
+                            
+                            ripple.radius += ripple.expansionSpeed * dt * 60;
+                            ripple.life -= dt * 1.5;
+                            ripple.opacity = Math.max(0, ripple.life * (0.6 - ripple.delay * 2));
+                        });
+                    }
+                    
+                    // Update particle effects
+                    if (effect.particles) {
+                        effect.particles.forEach(particle => {
+                            // Apply gravity to particles
+                            particle.velocityY += particle.gravity * dt * 60;
+                            
+                            // Update particle positions
+                            particle.x += particle.velocityX * dt * 60;
+                            particle.y += particle.velocityY * dt * 60;
+                            
+                            // Apply air resistance
+                            particle.velocityX *= 0.98;
+                            particle.velocityY *= 0.98;
+                            
+                            // Fade out particles
+                            particle.life -= dt * 2;
+                            particle.opacity = Math.max(0, particle.life * 0.8);
+                            
+                            // Shrink particles as they fade
+                            particle.size = Math.max(0.5, particle.size * (0.99 + particle.life * 0.01));
+                        });
+                    }
+                });
+            }
+            
+            createSplashEffect(x, y, impactVelocity) {
+                // Skip effect creation if performance is too low
+                if (this.performanceScaler.shouldSkipEffect()) {
+                    return;
+                }
+                
+                // Limit the number of active splash effects based on performance
+                if (this.splashEffects.length >= this.currentMaxSplashEffects) {
+                    // Release oldest splash effect back to pool
+                    const oldSplash = this.splashEffects.shift();
+                    this.releaseSplashEffect(oldSplash);
+                }
+                
+                // Calculate splash intensity based on impact velocity
+                const intensity = Math.min(Math.abs(impactVelocity) / 10, 1);
+                const maxRadius = 20 + intensity * 30; // Larger splash for higher velocity
+                
+                // Acquire splash effect from object pool
+                const splash = this.objectPools.splashEffects.acquire();
+                
+                // Initialize splash effect properties
+                splash.x = x;
+                splash.y = y;
+                splash.radius = 2;
+                splash.maxRadius = maxRadius;
+                splash.expansionSpeed = 40 + intensity * 20;
+                splash.opacity = 0.8;
+                splash.life = 1.0;
+                splash.created = Date.now();
+                splash.intensity = intensity;
+                splash.ripples = [];
+                splash.particles = [];
+                
+                // Add multiple ripple layers for more realistic effect (scaled by performance)
+                const rippleCount = this.performanceScaler.getScaledValue(4);
+                for (let i = 0; i < rippleCount; i++) {
+                    splash.ripples.push({
+                        radius: 1 + i * 2,
+                        maxRadius: maxRadius * (0.8 - i * 0.15),
+                        expansionSpeed: (35 + intensity * 15) * (1 - i * 0.2),
+                        opacity: 0.6 - i * 0.1,
+                        life: 1.0,
+                        delay: i * 0.08 // Stagger the ripples
+                    });
+                }
+                
+                // Add particle effects for enhanced splash visuals (scaled by performance)
+                const baseParticleCount = Math.floor(3 + intensity * 5);
+                const particleCount = this.performanceScaler.getScaledValue(baseParticleCount);
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = this.objectPools.particles.acquire();
+                    const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+                    const speed = 15 + Math.random() * 25 + intensity * 10;
+                    
+                    particle.x = x;
+                    particle.y = y;
+                    particle.velocityX = Math.cos(angle) * speed;
+                    particle.velocityY = Math.sin(angle) * speed - Math.random() * 10; // Upward bias
+                    particle.size = 1 + Math.random() * 2 + intensity;
+                    particle.life = 1.0;
+                    particle.gravity = 0.3;
+                    particle.opacity = 0.7 + Math.random() * 0.3;
+                    
+                    splash.particles.push(particle);
+                }
+                
+                this.splashEffects.push(splash);
+            }
+            
+            releaseSplashEffect(splash) {
+                // Release particles back to pool
+                if (splash.particles) {
+                    splash.particles.forEach(particle => {
+                        this.objectPools.particles.release(particle);
+                    });
+                    splash.particles = [];
+                }
+                
+                // Release splash effect back to pool
+                this.objectPools.splashEffects.release(splash);
+            }
+            
+            increaseWaterLevel() {
+                if (this.waterLevel < this.maxWaterLevel) {
+                    this.waterLevel = Math.min(this.maxWaterLevel, this.waterLevel + this.dropletIncrement);
+                }
+            }
+            
+            cleanup() {
+                // Clean up droplets and return to object pool
+                const dropletsToRemove = [];
+                this.droplets = this.droplets.filter((droplet, index) => {
+                    let shouldRemove = false;
+                    
+                    if (droplet.splashed) {
+                        // Keep splashed droplets for a short time for visual effect
+                        const timeSinceSplash = Date.now() - (droplet.splashTime || droplet.created);
+                        shouldRemove = timeSinceSplash >= 1000; // Remove after 1 second
+                    } else {
+                        // Remove droplets that have lived too long or are off-screen
+                        const age = Date.now() - droplet.created;
+                        shouldRemove = droplet.life <= 0 || age >= 10000; // 10 second maximum lifespan
+                    }
+                    
+                    if (shouldRemove) {
+                        dropletsToRemove.push(droplet);
+                        return false;
+                    }
+                    return true;
+                });
+                
+                // Return removed droplets to object pool
+                dropletsToRemove.forEach(droplet => {
+                    this.objectPools.droplets.release(droplet);
+                });
+                
+                // Clean up splash effects and return to object pool
+                const splashesToRemove = [];
+                this.splashEffects = this.splashEffects.filter(effect => {
+                    // Remove effects that have faded out or exceeded max radius
+                    const isAlive = effect.life > 0 && effect.radius < effect.maxRadius * 1.5;
+                    
+                    if (!isAlive) {
+                        splashesToRemove.push(effect);
+                        return false;
+                    }
+                    
+                    // Clean up ripple layers
+                    if (effect.ripples) {
+                        effect.ripples = effect.ripples.filter(ripple => 
+                            ripple.life > 0 && ripple.radius < ripple.maxRadius * 1.5
+                        );
+                    }
+                    
+                    // Clean up particle effects and return to pool
+                    if (effect.particles) {
+                        const particlesToRemove = [];
+                        effect.particles = effect.particles.filter(particle => {
+                            const shouldKeep = particle.life > 0 && particle.opacity > 0.01 && particle.size > 0.1;
+                            if (!shouldKeep) {
+                                particlesToRemove.push(particle);
+                            }
+                            return shouldKeep;
+                        });
+                        
+                        // Return removed particles to pool
+                        particlesToRemove.forEach(particle => {
+                            this.objectPools.particles.release(particle);
+                        });
+                    }
+                    
+                    return true;
+                });
+                
+                // Return removed splash effects to object pool
+                splashesToRemove.forEach(splash => {
+                    this.releaseSplashEffect(splash);
+                });
+            }
+            
+            getWaterLevel() {
+                return this.waterLevel;
+            }
+            
+            getDroplets() {
+                return this.droplets;
+            }
+            
+            getSplashEffects() {
+                return this.splashEffects;
+            }
+            
+            // Method to set water level (for loading saved progress)
+            setWaterLevel(level) {
+                this.waterLevel = Math.max(0, Math.min(this.maxWaterLevel, level));
+            }
+            
+            // Performance monitoring methods
+            getPerformanceStats() {
+                return {
+                    fps: this.frameRateMonitor.getCurrentFps(),
+                    performanceLevel: Math.round(this.performanceLevel * 100) + '%',
+                    activeDroplets: this.droplets.length,
+                    maxDroplets: this.currentMaxDroplets,
+                    activeSplashEffects: this.splashEffects.length,
+                    maxSplashEffects: this.currentMaxSplashEffects,
+                    poolStats: {
+                        droplets: {
+                            active: this.objectPools.droplets.getActiveCount(),
+                            pooled: this.objectPools.droplets.getPoolSize()
+                        },
+                        splashEffects: {
+                            active: this.objectPools.splashEffects.getActiveCount(),
+                            pooled: this.objectPools.splashEffects.getPoolSize()
+                        },
+                        particles: {
+                            active: this.objectPools.particles.getActiveCount(),
+                            pooled: this.objectPools.particles.getPoolSize()
+                        }
+                    }
+                };
+            }
+            
+            // Force performance level adjustment (for testing)
+            setPerformanceLevel(level) {
+                this.performanceLevel = Math.max(0.1, Math.min(1.0, level));
+                this.currentMaxDroplets = this.performanceScaler.getScaledValue(this.maxDroplets);
+                this.currentMaxSplashEffects = this.performanceScaler.getScaledValue(this.maxSplashEffects);
+                console.log('Performance level manually set to:', (this.performanceLevel * 100).toFixed(0) + '%');
+            }
+            
+            // Update simulation bounds when canvas is resized
+            updateBounds(width, height) {
+                try {
+                    console.log('Updating simulation bounds to:', width, 'x', height);
+                    
+                    // Remove droplets that are now outside the new bounds
+                    this.droplets = this.droplets.filter(droplet => {
+                        if (droplet.x < 0 || droplet.x > width || droplet.y > height) {
+                            // Return droplet to pool
+                            this.objectPools.droplets.release(droplet);
+                            return false;
+                        }
+                        return true;
+                    });
+                    
+                    // Remove splash effects that are now outside bounds
+                    this.splashEffects = this.splashEffects.filter(effect => {
+                        if (effect.x < 0 || effect.x > width || effect.y > height) {
+                            // Return effect to pool
+                            this.objectPools.splashEffects.release(effect);
+                            return false;
+                        }
+                        return true;
+                    });
+                    
+                    console.log('Simulation bounds updated successfully');
+                } catch (error) {
+                    console.error('Error updating simulation bounds:', error);
+                }
+            }
+        }
+        
+        class CanvasRenderer {
+            constructor(canvasId, errorHandler) {
+                this.errorHandler = errorHandler;
+                
+                try {
+                    this.canvas = document.getElementById(canvasId);
+                    if (!this.canvas) {
+                        throw new Error(`Canvas element with id '${canvasId}' not found`);
+                    }
+                    
+                    this.ctx = this.canvas.getContext('2d');
+                    if (!this.ctx) {
+                        throw new Error('Canvas 2D context not supported');
+                    }
+                    
+                    // Initialize canvas size handler
+                    this.canvasSizeHandler = new CanvasSizeHandler(this.canvas);
+                    
+                    // Initialize water simulation engine
+                    this.waterSimulation = new WaterSimulationEngine();
+                    
+                    // Initialize milestone system
+                    this.milestoneSystem = new MilestoneSystem(this);
+                    
+                    this.setupCanvas();
+                    this.bindEvents();
+                    this.startRenderLoop();
+                    
+                    // Animation state
+                    this.animationId = null;
+                    this.lastTime = 0;
+                    this.lastWaterLevel = -1; // Track last water level for rendering optimization
+                    
+                    console.log('CanvasRenderer initialized successfully');
+                } catch (error) {
+                    this.errorHandler.handleCanvasError(error, { phase: 'initialization' });
+                    throw error;
+                }
+            }
+            
+            setupCanvas() {
+                // Set canvas dimensions to 60vh height with responsive width
+                const updateCanvasSize = () => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const dpr = window.devicePixelRatio || 1;
+                    
+                    // Set display size (CSS pixels)
+                    const displayWidth = rect.width;
+                    const displayHeight = window.innerHeight * 0.6; // 60vh
+                    
+                    // Set actual size in memory (scaled for high DPI)
+                    this.canvas.width = displayWidth * dpr;
+                    this.canvas.height = displayHeight * dpr;
+                    
+                    // Scale the drawing context so everything draws at the correct size
+                    this.ctx.scale(dpr, dpr);
+                    
+                    // Set CSS size to maintain aspect ratio
+                    this.canvas.style.width = displayWidth + 'px';
+                    this.canvas.style.height = displayHeight + 'px';
+                };
+                
+                updateCanvasSize();
+                
+                // Handle window resize
+                this.resizeHandler = () => {
+                    updateCanvasSize();
+                };
+                
+                window.addEventListener('resize', this.resizeHandler);
+            }
+            
+            bindEvents() {
+                try {
+                    // Use the new TouchEventHandler for robust event handling
+                    this.touchHandler = new TouchEventHandler(this.canvas, (x, y, eventType) => {
+                        try {
+                            this.onCanvasClick(x, y, eventType);
+                        } catch (error) {
+                            this.errorHandler.handleCanvasError(error, { 
+                                phase: 'interaction', 
+                                eventType,
+                                coordinates: { x, y }
+                            });
+                        }
+                    });
+                    
+                    // Handle canvas resize events
+                    this.canvas.addEventListener('canvasResize', (event) => {
+                        try {
+                            console.log('Canvas resized, updating simulation bounds');
+                            // Update water simulation bounds if needed
+                            if (this.waterSimulation && this.waterSimulation.updateBounds) {
+                                this.waterSimulation.updateBounds(event.detail.width, event.detail.height);
+                            }
+                        } catch (error) {
+                            this.errorHandler.handleCanvasError(error, { phase: 'resize' });
+                        }
+                    });
+                    
+                    console.log('Event handlers bound successfully');
+                } catch (error) {
+                    this.errorHandler.handleCanvasError(error, { phase: 'event-binding' });
+                    throw error;
+                }
+            }
+            
+            getCanvasCoordinates(event) {
+                const rect = this.canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                
+                // Get the actual display dimensions
+                const displayWidth = rect.width;
+                const displayHeight = rect.height;
+                
+                // Calculate the coordinate conversion from screen space to canvas space
+                // Account for device pixel ratio scaling
+                const scaleX = (this.canvas.width / dpr) / displayWidth;
+                const scaleY = (this.canvas.height / dpr) / displayHeight;
+                
+                // Convert screen coordinates to canvas coordinates
+                const canvasX = (event.clientX - rect.left) * scaleX;
+                const canvasY = (event.clientY - rect.top) * scaleY;
+                
+                return {
+                    x: canvasX,
+                    y: canvasY
+                };
+            }
+            
+            onCanvasClick(x, y, eventType = 'unknown') {
+                try {
+                    // Validate coordinates are within canvas bounds
+                    const canvasWidth = this.canvas.width;
+                    const canvasHeight = this.canvas.height;
+                    
+                    if (x < 0 || x > canvasWidth || y < 0 || y > canvasHeight) {
+                        console.warn('Click coordinates outside canvas bounds:', x, y, 'Canvas size:', canvasWidth, canvasHeight);
+                        // Clamp coordinates to canvas bounds
+                        x = Math.max(0, Math.min(canvasWidth, x));
+                        y = Math.max(0, Math.min(canvasHeight, y));
+                    }
+                    
+                    // Add visual touch feedback (only for touch and mouse events)
+                    if (eventType !== 'keyboard') {
+                        this.createTouchRipple(x, y);
+                    }
+                    
+                    // Add droplet to the water simulation engine
+                    this.waterSimulation.addDroplet(x, y);
+                    
+                    console.log('Droplet created at:', Math.round(x), Math.round(y), 'via', eventType, 'Canvas size:', Math.round(canvasWidth), Math.round(canvasHeight));
+                } catch (error) {
+                    this.errorHandler.handleCanvasError(error, { 
+                        phase: 'droplet-creation',
+                        coordinates: { x, y },
+                        eventType
+                    });
+                }
+            }
+            
+            createTouchRipple(x, y) {
+                // Create ripple effect at touch/click position
+                const canvasContainer = this.canvas.parentElement;
+                const rect = this.canvas.getBoundingClientRect();
+                
+                // Create ripple element
+                const ripple = document.createElement('div');
+                ripple.className = 'touch-ripple';
+                ripple.style.left = (x - 10) + 'px'; // Center the 20px ripple
+                ripple.style.top = (y - 10) + 'px';
+                ripple.style.width = '20px';
+                ripple.style.height = '20px';
+                
+                // Add to canvas container
+                canvasContainer.style.position = 'relative';
+                canvasContainer.appendChild(ripple);
+                
+                // Add touch active class for container feedback
+                canvasContainer.classList.add('touch-active');
+                
+                // Remove ripple and active class after animation
+                setTimeout(() => {
+                    if (ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple);
+                    }
+                    canvasContainer.classList.remove('touch-active');
+                }, 600);
+            }
+            
+            startRenderLoop() {
+                const renderFrame = (currentTime) => {
+                    const deltaTime = currentTime - this.lastTime;
+                    this.lastTime = currentTime;
+                    
+                    this.render(deltaTime);
+                    this.animationId = requestAnimationFrame(renderFrame);
+                };
+                
+                this.animationId = requestAnimationFrame(renderFrame);
+            }
+            
+            render(deltaTime) {
+                try {
+                    // Get canvas dimensions for physics calculations
+                    const canvasWidth = this.canvas.width;
+                    const canvasHeight = this.canvas.height;
+                    
+                    // Validate canvas dimensions
+                    if (canvasWidth <= 0 || canvasHeight <= 0) {
+                        console.warn('Invalid canvas dimensions:', canvasWidth, canvasHeight);
+                        return;
+                    }
+                    
+                    // Update water simulation with physics
+                    this.waterSimulation.update(deltaTime, canvasHeight);
+                    
+                    // Get current water level
+                    const waterLevel = this.waterSimulation.getWaterLevel();
+                    
+                    // Update milestone system
+                    this.milestoneSystem.update(deltaTime);
+                    this.milestoneSystem.checkMilestones(waterLevel);
+                    
+                    // Optimized canvas clearing - only clear if there are active animations
+                    const hasActiveElements = this.waterSimulation.getDroplets().length > 0 || 
+                                            this.waterSimulation.getSplashEffects().length > 0 ||
+                                            this.milestoneSystem.hasActiveAnimations();
+                    
+                    if (hasActiveElements || this.lastWaterLevel !== waterLevel) {
+                        // Clear canvas with transparent background
+                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                        
+                        // Set canvas background to transparent to show the card-bg styling
+                        this.ctx.globalCompositeOperation = 'source-over';
+                        
+                        // Render all simulation elements
+                        this.renderWaterLevel(waterLevel);
+                        this.renderDroplets(this.waterSimulation.getDroplets());
+                        this.renderEffects(this.waterSimulation.getSplashEffects());
+                        
+                        // Render milestone effects (fish, waves, completion)
+                        this.milestoneSystem.render(this.ctx, canvasWidth, canvasHeight, waterLevel);
+                        
+                        // Track last water level for optimization
+                        this.lastWaterLevel = waterLevel;
+                    }
+                } catch (error) {
+                    this.errorHandler.handleCanvasError(error, { 
+                        phase: 'rendering',
+                        deltaTime,
+                        canvasDimensions: { 
+                            width: this.canvas.width, 
+                            height: this.canvas.height 
+                        }
+                    });
+                    
+                    // Try to recover by stopping the render loop temporarily
+                    if (this.animationId) {
+                        cancelAnimationFrame(this.animationId);
+                        this.animationId = null;
+                        
+                        // Restart after a brief delay
+                        setTimeout(() => {
+                            if (!this.animationId) {
+                                this.startRenderLoop();
+                            }
+                        }, 1000);
+                    }
+                }
+            }
+            
+            renderWaterLevel(waterLevel) {
+                if (waterLevel <= 0) return;
+                
+                // Calculate water height based on percentage (0-100)
+                const waterHeight = (waterLevel / 100) * this.canvas.height;
+                const waterY = this.canvas.height - waterHeight;
+                
+                this.ctx.save();
+                
+                // Create enhanced water gradient with multiple color stops
+                const gradient = this.ctx.createLinearGradient(0, waterY, 0, this.canvas.height);
+                gradient.addColorStop(0, 'rgba(147, 197, 253, 0.4)'); // blue-300 surface
+                gradient.addColorStop(0.1, 'rgba(59, 130, 246, 0.6)'); // blue-500 
+                gradient.addColorStop(0.7, 'rgba(37, 99, 235, 0.8)');  // blue-600 
+                gradient.addColorStop(1, 'rgba(29, 78, 216, 0.9)');    // blue-700 depth
+                
+                // Draw main water body
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, waterY, this.canvas.width, waterHeight);
+                
+                // Add subtle surface shimmer effect
+                if (waterHeight > 10) {
+                    const shimmerGradient = this.ctx.createLinearGradient(0, waterY, 0, waterY + 20);
+                    shimmerGradient.addColorStop(0, `rgba(191, 219, 254, ${0.3 + 0.1 * Math.sin(Date.now() * 0.003)})`);
+                    shimmerGradient.addColorStop(1, 'rgba(191, 219, 254, 0)');
+                    
+                    this.ctx.fillStyle = shimmerGradient;
+                    this.ctx.fillRect(0, waterY, this.canvas.width, Math.min(20, waterHeight));
+                }
+                
+                // Add depth reflection effect for deeper water
+                if (waterLevel > 50) {
+                    const reflectionOpacity = (waterLevel - 50) / 50 * 0.2;
+                    const reflectionGradient = this.ctx.createLinearGradient(
+                        0, this.canvas.height - waterHeight * 0.3, 
+                        0, this.canvas.height
+                    );
+                    reflectionGradient.addColorStop(0, `rgba(96, 165, 250, ${reflectionOpacity})`);
+                    reflectionGradient.addColorStop(1, 'rgba(96, 165, 250, 0)');
+                    
+                    this.ctx.fillStyle = reflectionGradient;
+                    this.ctx.fillRect(0, this.canvas.height - waterHeight * 0.3, this.canvas.width, waterHeight * 0.3);
+                }
+                
+                this.ctx.restore();
+            }
+            
+            renderDroplets(droplets) {
+                // Render droplets with physics-based visual feedback
+                droplets.forEach(droplet => {
+                    // Calculate opacity based on life and splash state
+                    let opacity = droplet.life;
+                    
+                    // If droplet has splashed, fade it out quickly
+                    if (droplet.splashed) {
+                        const timeSinceSplash = Date.now() - (droplet.splashTime || droplet.created);
+                        opacity = Math.max(0, 1 - (timeSinceSplash / 1000)); // Fade over 1 second
+                    }
+                    
+                    // Skip rendering if completely transparent
+                    if (opacity <= 0) return;
+                    
+                    // Draw droplet with gradient for better visual appeal
+                    const gradient = this.ctx.createRadialGradient(
+                        droplet.x, droplet.y, 0,
+                        droplet.x, droplet.y, droplet.size
+                    );
+                    gradient.addColorStop(0, `rgba(147, 197, 253, ${opacity})`); // blue-300
+                    gradient.addColorStop(1, `rgba(59, 130, 246, ${opacity * 0.6})`); // blue-500
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(droplet.x, droplet.y, droplet.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fill();
+                    
+                    // Add subtle border for better visibility
+                    this.ctx.beginPath();
+                    this.ctx.arc(droplet.x, droplet.y, droplet.size, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = `rgba(59, 130, 246, ${opacity * 0.8})`;
+                    this.ctx.lineWidth = 1;
+                    this.ctx.stroke();
+                    
+                    // Add motion blur effect for fast-moving droplets
+                    if (Math.abs(droplet.velocityY) > 5) {
+                        const blurLength = Math.min(droplet.velocityY * 0.3, 10);
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(droplet.x, droplet.y - blurLength);
+                        this.ctx.lineTo(droplet.x, droplet.y);
+                        this.ctx.strokeStyle = `rgba(147, 197, 253, ${opacity * 0.3})`;
+                        this.ctx.lineWidth = droplet.size * 0.5;
+                        this.ctx.lineCap = 'round';
+                        this.ctx.stroke();
+                    }
+                });
+            }
+            
+            renderEffects(effects) {
+                // Render enhanced splash effects with ripples and particles
+                effects.forEach(effect => {
+                    // Skip if completely transparent
+                    if (effect.opacity <= 0) return;
+                    
+                    this.ctx.save();
+                    
+                    // Draw multiple ripple layers for enhanced visual depth
+                    if (effect.ripples) {
+                        effect.ripples.forEach((ripple, index) => {
+                            if (ripple.opacity > 0 && ripple.radius > 0 && ripple.delay <= 0) {
+                                this.ctx.beginPath();
+                                this.ctx.arc(effect.x, effect.y, ripple.radius, 0, Math.PI * 2);
+                                
+                                // Vary colors for different ripple layers
+                                const colors = [
+                                    `rgba(59, 130, 246, ${ripple.opacity})`,    // blue-500
+                                    `rgba(147, 197, 253, ${ripple.opacity})`,  // blue-300
+                                    `rgba(96, 165, 250, ${ripple.opacity})`,   // blue-400
+                                    `rgba(191, 219, 254, ${ripple.opacity})`   // blue-200
+                                ];
+                                
+                                this.ctx.strokeStyle = colors[index % colors.length];
+                                this.ctx.lineWidth = Math.max(0.5, 2 - index * 0.3);
+                                this.ctx.stroke();
+                            }
+                        });
+                    }
+                    
+                    // Draw main ripple with enhanced glow effect
+                    if (effect.radius > 0) {
+                        // Create glow effect
+                        this.ctx.shadowColor = `rgba(59, 130, 246, ${effect.opacity * 0.5})`;
+                        this.ctx.shadowBlur = 8 + effect.intensity * 5;
+                        
+                        this.ctx.beginPath();
+                        this.ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
+                        this.ctx.strokeStyle = `rgba(59, 130, 246, ${effect.opacity})`;
+                        this.ctx.lineWidth = 2 + effect.intensity;
+                        this.ctx.stroke();
+                        
+                        // Reset shadow
+                        this.ctx.shadowColor = 'transparent';
+                        this.ctx.shadowBlur = 0;
+                    }
+                    
+                    // Draw particle effects for enhanced splash visuals
+                    if (effect.particles) {
+                        effect.particles.forEach(particle => {
+                            if (particle.opacity > 0 && particle.size > 0) {
+                                this.ctx.beginPath();
+                                this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                                
+                                // Create gradient for particles
+                                const gradient = this.ctx.createRadialGradient(
+                                    particle.x, particle.y, 0,
+                                    particle.x, particle.y, particle.size
+                                );
+                                gradient.addColorStop(0, `rgba(147, 197, 253, ${particle.opacity})`);
+                                gradient.addColorStop(1, `rgba(59, 130, 246, ${particle.opacity * 0.3})`);
+                                
+                                this.ctx.fillStyle = gradient;
+                                this.ctx.fill();
+                                
+                                // Add subtle glow to particles
+                                this.ctx.shadowColor = `rgba(96, 165, 250, ${particle.opacity * 0.3})`;
+                                this.ctx.shadowBlur = 3;
+                                this.ctx.fill();
+                                this.ctx.shadowColor = 'transparent';
+                                this.ctx.shadowBlur = 0;
+                            }
+                        });
+                    }
+                    
+                    this.ctx.restore();
+                });
+            }
+            
+            // Get water simulation engine for external access
+            getWaterSimulation() {
+                return this.waterSimulation;
+            }
+            
+            // Get milestone system for external access
+            getMilestoneSystem() {
+                return this.milestoneSystem;
+            }
+            
+            // Cleanup method
+            destroy() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                if (this.resizeHandler) {
+                    window.removeEventListener('resize', this.resizeHandler);
+                }
+            }
+        }
+        
+        // MilestoneSystem class for handling visual rewards and milestone achievements
+        class MilestoneSystem {
+            constructor(renderer) {
+                this.renderer = renderer;
+                this.storageKey = 'water-ocean-milestones';
+                this.isLocalStorageAvailable = this.checkLocalStorageAvailability();
+                
+                // Define milestone thresholds and states
+                this.milestones = {
+                    fish: { 
+                        threshold: 30, 
+                        achieved: false,
+                        name: 'Swimming Fish',
+                        description: 'Fish start swimming in the water'
+                    },
+                    waves: { 
+                        threshold: 70, 
+                        achieved: false,
+                        name: 'Surface Waves',
+                        description: 'Subtle waves appear at the water surface'
+                    },
+                    completion: { 
+                        threshold: 100, 
+                        achieved: false,
+                        name: 'Ocean Complete',
+                        description: 'Glowing $WATER logo and completion message'
+                    }
+                };
+                
+                // Animation state for visual effects
+                this.animationTime = 0;
+                this.fishPositions = [];
+                this.waveOffset = 0;
+                this.completionGlow = 0;
+                this.completionMessageShown = false;
+                
+                // Initialize fish positions
+                this.initializeFish();
+                
+                // Load saved milestone state
+                this.loadMilestoneState();
+                
+                console.log('MilestoneSystem initialized. Milestones loaded:', this.getMilestoneStatus());
+            }
+            
+            checkLocalStorageAvailability() {
+                try {
+                    const testKey = 'water-milestone-test';
+                    localStorage.setItem(testKey, 'test');
+                    localStorage.removeItem(testKey);
+                    return true;
+                } catch (e) {
+                    console.warn('localStorage not available for milestones:', e.message);
+                    return false;
+                }
+            }
+            
+            initializeFish() {
+                // Create 3-5 fish with random starting positions and properties
+                const fishCount = 3 + Math.floor(Math.random() * 3); // 3-5 fish
+                this.fishPositions = [];
+                
+                for (let i = 0; i < fishCount; i++) {
+                    this.fishPositions.push({
+                        x: Math.random() * 0.8 + 0.1, // 10-90% of canvas width
+                        y: 0.3 + Math.random() * 0.4, // 30-70% of water depth
+                        speed: 0.5 + Math.random() * 1.0, // Random speed
+                        direction: Math.random() > 0.5 ? 1 : -1, // Random direction
+                        size: 8 + Math.random() * 6, // 8-14 pixel size
+                        phase: Math.random() * Math.PI * 2, // Random animation phase
+                        type: Math.floor(Math.random() * 3), // 3 different fish types
+                        pauseTime: 0, // Time remaining in pause state
+                        burstTime: 0, // Time remaining in burst swimming
+                        burstDirection: 0 // Direction for burst swimming
+                    });
+                }
+            }
+            
+            checkMilestones(waterLevel) {
+                let newMilestonesAchieved = false;
+                
+                // Check each milestone threshold
+                Object.keys(this.milestones).forEach(key => {
+                    const milestone = this.milestones[key];
+                    
+                    if (!milestone.achieved && waterLevel >= milestone.threshold) {
+                        milestone.achieved = true;
+                        newMilestonesAchieved = true;
+                        
+                        console.log(`🎉 Milestone achieved: ${milestone.name} at ${waterLevel}%`);
+                        
+                        // Trigger specific milestone effects
+                        this.triggerMilestoneEffect(key, waterLevel);
+                    }
+                });
+                
+                // Save milestone state if any new milestones were achieved
+                if (newMilestonesAchieved) {
+                    this.saveMilestoneState();
+                }
+                
+                return newMilestonesAchieved;
+            }
+            
+            triggerMilestoneEffect(milestoneKey, waterLevel) {
+                switch (milestoneKey) {
+                    case 'fish':
+                        console.log('🐟 Fish are now swimming in the water!');
+                        // Fish animation will start automatically when rendering
+                        break;
+                        
+                    case 'waves':
+                        console.log('🌊 Waves are now moving at the surface!');
+                        // Wave animation will start automatically when rendering
+                        break;
+                        
+                    case 'completion':
+                        console.log('✨ Ocean complete! Showing $WATER logo and completion message');
+                        this.showCompletionMessage();
+                        break;
+                }
+            }
+            
+            showCompletionMessage() {
+                if (this.completionMessageShown) return;
+                
+                // Create and show completion message
+                const messageElement = document.createElement('div');
+                messageElement.id = 'completion-message';
+                messageElement.innerHTML = 'You are part of the tide 🌊';
+                messageElement.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    color: #60A5FA;
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    text-align: center;
+                    z-index: 10;
+                    opacity: 0;
+                    transition: opacity 1s ease-in-out;
+                    text-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+                    pointer-events: none;
+                `;
+                
+                // Find the canvas container and add the message
+                const canvasContainer = document.querySelector('.canvas-container');
+                if (canvasContainer) {
+                    canvasContainer.style.position = 'relative';
+                    canvasContainer.appendChild(messageElement);
+                    
+                    // Fade in the message
+                    setTimeout(() => {
+                        messageElement.style.opacity = '1';
+                    }, 100);
+                    
+                    // Fade out after 5 seconds
+                    setTimeout(() => {
+                        messageElement.style.opacity = '0';
+                        setTimeout(() => {
+                            if (messageElement.parentNode) {
+                                messageElement.parentNode.removeChild(messageElement);
+                            }
+                        }, 1000);
+                    }, 5000);
+                }
+                
+                this.completionMessageShown = true;
+            }
+            
+            update(deltaTime) {
+                // Update animation time for all effects
+                this.animationTime += deltaTime / 1000; // Convert to seconds
+                
+                // Update wave animation
+                if (this.milestones.waves.achieved) {
+                    this.waveOffset += deltaTime * 0.001; // Slow wave movement
+                }
+                
+                // Update fish positions
+                if (this.milestones.fish.achieved) {
+                    this.updateFishPositions(deltaTime);
+                }
+                
+                // Update completion glow effect
+                if (this.milestones.completion.achieved) {
+                    this.completionGlow = 0.5 + 0.3 * Math.sin(this.animationTime * 2); // Pulsing glow
+                }
+            }
+            
+            updateFishPositions(deltaTime) {
+                const dt = deltaTime / 1000; // Convert to seconds
+                
+                this.fishPositions.forEach(fish => {
+                    // Update horizontal position with more natural movement
+                    const baseSpeed = fish.speed * dt * 0.08;
+                    const speedVariation = 1 + 0.3 * Math.sin(this.animationTime * 1.5 + fish.phase);
+                    fish.x += fish.direction * baseSpeed * speedVariation;
+                    
+                    // Smooth direction changes at edges
+                    if (fish.x <= 0.05 || fish.x >= 0.95) {
+                        fish.direction *= -1;
+                        fish.x = Math.max(0.05, Math.min(0.95, fish.x));
+                        
+                        // Add slight pause when changing direction
+                        fish.pauseTime = 0.5 + Math.random() * 0.5;
+                    }
+                    
+                    // Handle pause behavior
+                    if (fish.pauseTime > 0) {
+                        fish.pauseTime -= dt;
+                        fish.x += fish.direction * baseSpeed * 0.1; // Very slow movement during pause
+                    }
+                    
+                    // Add realistic vertical swimming pattern
+                    const verticalSpeed = 0.02 * dt;
+                    const verticalPattern = Math.sin(this.animationTime * 1.8 + fish.phase) * verticalSpeed;
+                    const depthPreference = Math.sin(this.animationTime * 0.5 + fish.phase * 0.3) * 0.01 * dt;
+                    
+                    fish.y += verticalPattern + depthPreference;
+                    fish.y = Math.max(0.15, Math.min(0.85, fish.y)); // Keep fish well within water bounds
+                    
+                    // Update animation phase with slight randomization
+                    fish.phase += dt * (2.5 + Math.sin(this.animationTime * 0.7 + fish.phase) * 0.5);
+                    
+                    // Add occasional burst swimming behavior
+                    if (Math.random() < 0.001) { // Very rare
+                        fish.burstTime = 1 + Math.random();
+                        fish.burstDirection = (Math.random() - 0.5) * 2;
+                    }
+                    
+                    // Handle burst swimming
+                    if (fish.burstTime > 0) {
+                        fish.burstTime -= dt;
+                        fish.x += fish.burstDirection * baseSpeed * 3; // Fast movement during burst
+                        fish.x = Math.max(0.05, Math.min(0.95, fish.x));
+                    }
+                });
+            }
+            
+            render(ctx, canvasWidth, canvasHeight, waterLevel) {
+                // Only render if there's water and milestones are achieved
+                if (waterLevel <= 0) return;
+                
+                const waterHeight = (waterLevel / 100) * canvasHeight;
+                const waterSurfaceY = canvasHeight - waterHeight;
+                
+                // Render fish if milestone achieved
+                if (this.milestones.fish.achieved && waterLevel >= 30) {
+                    this.renderFish(ctx, canvasWidth, canvasHeight, waterSurfaceY, waterHeight);
+                }
+                
+                // Render waves if milestone achieved
+                if (this.milestones.waves.achieved && waterLevel >= 70) {
+                    this.renderWaves(ctx, canvasWidth, waterSurfaceY);
+                }
+                
+                // Render completion effects if milestone achieved
+                if (this.milestones.completion.achieved && waterLevel >= 100) {
+                    this.renderCompletion(ctx, canvasWidth, canvasHeight);
+                }
+            }
+            
+            renderFish(ctx, canvasWidth, canvasHeight, waterSurfaceY, waterHeight) {
+                this.fishPositions.forEach(fish => {
+                    // Calculate actual fish position
+                    const fishX = fish.x * canvasWidth;
+                    const fishY = waterSurfaceY + (fish.y * waterHeight);
+                    
+                    // Skip if fish would be above water surface
+                    if (fishY <= waterSurfaceY + 20) return;
+                    
+                    // Save context for fish rendering
+                    ctx.save();
+                    
+                    // Move to fish position
+                    ctx.translate(fishX, fishY);
+                    
+                    // Flip fish based on direction
+                    if (fish.direction < 0) {
+                        ctx.scale(-1, 1);
+                    }
+                    
+                    // Calculate swimming animation
+                    const swimPhase = Math.sin(fish.phase);
+                    const tailOffset = swimPhase * 3;
+                    
+                    // Draw fish based on type
+                    this.drawFish(ctx, fish.size, fish.type, tailOffset);
+                    
+                    ctx.restore();
+                });
+            }
+            
+            drawFish(ctx, size, type, tailOffset) {
+                const opacity = 0.85;
+                
+                // Enhanced fish colors with more variety
+                const colors = [
+                    { 
+                        body: `rgba(59, 130, 246, ${opacity})`, 
+                        accent: `rgba(147, 197, 253, ${opacity})`,
+                        highlight: `rgba(191, 219, 254, ${opacity * 0.7})`
+                    }, // Blue
+                    { 
+                        body: `rgba(16, 185, 129, ${opacity})`, 
+                        accent: `rgba(110, 231, 183, ${opacity})`,
+                        highlight: `rgba(167, 243, 208, ${opacity * 0.7})`
+                    }, // Green
+                    { 
+                        body: `rgba(245, 158, 11, ${opacity})`, 
+                        accent: `rgba(251, 191, 36, ${opacity})`,
+                        highlight: `rgba(254, 215, 170, ${opacity * 0.7})`
+                    }   // Orange
+                ];
+                
+                const color = colors[type % colors.length];
+                
+                // Add subtle glow effect around fish
+                ctx.shadowColor = color.body;
+                ctx.shadowBlur = 4;
+                
+                // Draw fish body with gradient
+                const bodyGradient = ctx.createRadialGradient(-size * 0.2, -size * 0.1, 0, 0, 0, size);
+                bodyGradient.addColorStop(0, color.highlight);
+                bodyGradient.addColorStop(0.6, color.body);
+                bodyGradient.addColorStop(1, color.body.replace(opacity.toString(), (opacity * 0.8).toString()));
+                
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size, size * 0.6, 0, 0, Math.PI * 2);
+                ctx.fillStyle = bodyGradient;
+                ctx.fill();
+                
+                // Reset shadow
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                
+                // Draw animated tail with more realistic movement
+                const tailSway = Math.sin(tailOffset * 0.5) * 0.3;
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.8, 0);
+                ctx.quadraticCurveTo(
+                    -size * 1.2 + tailOffset * 0.5, 
+                    -size * 0.3 + tailSway, 
+                    -size * 1.4 + tailOffset, 
+                    -size * 0.4 + tailSway
+                );
+                ctx.quadraticCurveTo(
+                    -size * 1.3 + tailOffset * 0.7, 
+                    tailSway * 0.5, 
+                    -size * 1.4 + tailOffset, 
+                    size * 0.4 + tailSway
+                );
+                ctx.quadraticCurveTo(
+                    -size * 1.2 + tailOffset * 0.5, 
+                    size * 0.3 + tailSway, 
+                    -size * 0.8, 
+                    0
+                );
+                ctx.fillStyle = color.accent;
+                ctx.fill();
+                
+                // Draw dorsal fin
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.2, -size * 0.6, size * 0.25, size * 0.15, -Math.PI * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = color.accent;
+                ctx.fill();
+                
+                // Draw pectoral fins with animation
+                const finOffset = Math.sin(tailOffset * 0.8) * 0.1;
+                ctx.beginPath();
+                ctx.ellipse(size * 0.1, size * 0.4 + finOffset, size * 0.3, size * 0.2, Math.PI * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = color.accent;
+                ctx.fill();
+                
+                // Draw fish eye with more detail
+                ctx.beginPath();
+                ctx.arc(size * 0.3, -size * 0.2, size * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                ctx.fill();
+                
+                // Eye highlight
+                ctx.beginPath();
+                ctx.arc(size * 0.32, -size * 0.22, size * 0.05, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+                ctx.fill();
+                
+                // Draw eye pupil
+                ctx.beginPath();
+                ctx.arc(size * 0.35, -size * 0.2, size * 0.08, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                ctx.fill();
+                
+                // Add scales pattern for larger fish
+                if (size > 8) {
+                    ctx.strokeStyle = color.highlight;
+                    ctx.lineWidth = 0.5;
+                    for (let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.arc(-size * 0.3 + i * size * 0.3, 0, size * 0.15, 0, Math.PI);
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            renderWaves(ctx, canvasWidth, waterSurfaceY) {
+                // Draw enhanced subtle wave animation at water surface
+                ctx.save();
+                
+                const baseAmplitude = 2.5; // Base wave height
+                const waveSpeed = this.waveOffset * 40; // Wave movement speed
+                
+                // Create multiple wave layers for realistic water surface
+                const waveLayers = [
+                    { frequency: 0.015, amplitude: baseAmplitude, speed: 1.0, opacity: 0.6 },
+                    { frequency: 0.025, amplitude: baseAmplitude * 0.7, speed: -0.8, opacity: 0.4 },
+                    { frequency: 0.035, amplitude: baseAmplitude * 0.4, speed: 1.2, opacity: 0.3 },
+                    { frequency: 0.008, amplitude: baseAmplitude * 1.2, speed: 0.6, opacity: 0.2 }
+                ];
+                
+                waveLayers.forEach((layer, index) => {
+                    // Create wave path
+                    ctx.beginPath();
+                    ctx.moveTo(0, waterSurfaceY);
+                    
+                    const points = [];
+                    for (let x = 0; x <= canvasWidth; x += 1.5) {
+                        const wavePhase = x * layer.frequency + waveSpeed * layer.speed;
+                        const waveHeight = Math.sin(wavePhase) * layer.amplitude;
+                        const secondaryWave = Math.sin(wavePhase * 2.3 + this.animationTime) * layer.amplitude * 0.3;
+                        const y = waterSurfaceY + waveHeight + secondaryWave;
+                        points.push({ x, y });
+                    }
+                    
+                    // Create smooth curve through points
+                    if (points.length > 2) {
+                        ctx.moveTo(points[0].x, points[0].y);
+                        for (let i = 1; i < points.length - 1; i++) {
+                            const cp1x = (points[i].x + points[i - 1].x) / 2;
+                            const cp1y = (points[i].y + points[i - 1].y) / 2;
+                            const cp2x = (points[i].x + points[i + 1].x) / 2;
+                            const cp2y = (points[i].y + points[i + 1].y) / 2;
+                            
+                            ctx.quadraticCurveTo(points[i].x, points[i].y, cp2x, cp2y);
+                        }
+                        ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+                    }
+                    
+                    // Create gradient for wave effect with varying colors
+                    const gradient = ctx.createLinearGradient(0, waterSurfaceY - 8, 0, waterSurfaceY + 8);
+                    
+                    if (index === 0) {
+                        // Primary wave - brightest
+                        gradient.addColorStop(0, `rgba(191, 219, 254, ${layer.opacity})`); // blue-200
+                        gradient.addColorStop(1, `rgba(147, 197, 253, ${layer.opacity * 0.5})`); // blue-300
+                    } else if (index === 1) {
+                        // Secondary wave
+                        gradient.addColorStop(0, `rgba(147, 197, 253, ${layer.opacity})`); // blue-300
+                        gradient.addColorStop(1, `rgba(96, 165, 250, ${layer.opacity * 0.5})`); // blue-400
+                    } else {
+                        // Tertiary waves
+                        gradient.addColorStop(0, `rgba(96, 165, 250, ${layer.opacity})`); // blue-400
+                        gradient.addColorStop(1, `rgba(59, 130, 246, ${layer.opacity * 0.5})`); // blue-500
+                    }
+                    
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = Math.max(0.5, 2.5 - index * 0.5);
+                    
+                    // Add subtle glow to primary wave
+                    if (index === 0) {
+                        ctx.shadowColor = 'rgba(147, 197, 253, 0.3)';
+                        ctx.shadowBlur = 3;
+                    }
+                    
+                    ctx.stroke();
+                    
+                    // Reset shadow
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                });
+                
+                // Add foam/bubble effects at wave peaks
+                if (Math.random() < 0.02) { // Occasional foam
+                    const foamX = Math.random() * canvasWidth;
+                    const foamY = waterSurfaceY + Math.sin(foamX * 0.02 + waveSpeed) * baseAmplitude;
+                    
+                    ctx.beginPath();
+                    ctx.arc(foamX, foamY, 1 + Math.random() * 2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.random() * 0.3})`;
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+            
+            renderCompletion(ctx, canvasWidth, canvasHeight) {
+                // Draw enhanced glowing $WATER logo in center of ocean
+                ctx.save();
+                
+                const centerX = canvasWidth / 2;
+                const centerY = canvasHeight * 0.7; // Position in lower part of canvas
+                
+                // Create pulsing glowing effect with multiple layers
+                const baseGlow = this.completionGlow;
+                const pulseGlow = 0.3 + 0.2 * Math.sin(this.animationTime * 3);
+                const glowIntensity = baseGlow + pulseGlow;
+                const glowSize = 50 + glowIntensity * 30;
+                
+                // Draw multiple glow layers for enhanced effect
+                for (let i = 0; i < 3; i++) {
+                    const layerSize = glowSize * (1 - i * 0.3);
+                    const layerIntensity = glowIntensity * (1 - i * 0.4);
+                    
+                    const glowGradient = ctx.createRadialGradient(
+                        centerX, centerY, 0,
+                        centerX, centerY, layerSize
+                    );
+                    
+                    if (i === 0) {
+                        // Innermost glow - brightest
+                        glowGradient.addColorStop(0, `rgba(191, 219, 254, ${layerIntensity * 0.9})`);
+                        glowGradient.addColorStop(0.3, `rgba(147, 197, 253, ${layerIntensity * 0.7})`);
+                        glowGradient.addColorStop(0.7, `rgba(96, 165, 250, ${layerIntensity * 0.4})`);
+                        glowGradient.addColorStop(1, 'rgba(96, 165, 250, 0)');
+                    } else if (i === 1) {
+                        // Middle glow
+                        glowGradient.addColorStop(0, `rgba(96, 165, 250, ${layerIntensity * 0.6})`);
+                        glowGradient.addColorStop(0.5, `rgba(59, 130, 246, ${layerIntensity * 0.3})`);
+                        glowGradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+                    } else {
+                        // Outer glow
+                        glowGradient.addColorStop(0, `rgba(59, 130, 246, ${layerIntensity * 0.3})`);
+                        glowGradient.addColorStop(0.6, `rgba(37, 99, 235, ${layerIntensity * 0.2})`);
+                        glowGradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+                    }
+                    
+                    ctx.fillStyle = glowGradient;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, layerSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Add sparkle effects around the logo
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI * 2 * i) / 8 + this.animationTime * 0.5;
+                    const distance = 35 + 10 * Math.sin(this.animationTime * 2 + i);
+                    const sparkleX = centerX + Math.cos(angle) * distance;
+                    const sparkleY = centerY + Math.sin(angle) * distance;
+                    const sparkleSize = 1 + Math.sin(this.animationTime * 4 + i) * 0.5;
+                    
+                    ctx.beginPath();
+                    ctx.arc(sparkleX, sparkleY, sparkleSize, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(191, 219, 254, ${0.6 + 0.4 * Math.sin(this.animationTime * 3 + i)})`;
+                    ctx.fill();
+                }
+                
+                // Draw $WATER text with enhanced effects
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = 'bold 28px Inter, sans-serif';
+                
+                // Multiple text shadow layers for enhanced glow
+                const textGlowLayers = [
+                    { blur: 25, color: `rgba(96, 165, 250, ${glowIntensity * 0.8})` },
+                    { blur: 15, color: `rgba(147, 197, 253, ${glowIntensity * 0.6})` },
+                    { blur: 8, color: `rgba(191, 219, 254, ${glowIntensity * 0.4})` }
+                ];
+                
+                textGlowLayers.forEach(layer => {
+                    ctx.shadowColor = layer.color;
+                    ctx.shadowBlur = layer.blur;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.95 + glowIntensity * 0.05})`;
+                    ctx.fillText('$WATER', centerX, centerY);
+                });
+                
+                // Reset shadow
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                
+                // Draw animated water droplet emoji above text
+                const dropletY = centerY - 45 + 3 * Math.sin(this.animationTime * 2);
+                ctx.font = '36px Arial, sans-serif';
+                ctx.shadowColor = `rgba(96, 165, 250, ${glowIntensity * 0.5})`;
+                ctx.shadowBlur = 10;
+                ctx.fillText('💧', centerX, dropletY);
+                
+                // Add floating particles around the completion area
+                for (let i = 0; i < 12; i++) {
+                    const particleAngle = (Math.PI * 2 * i) / 12 + this.animationTime * 0.3;
+                    const particleDistance = 60 + 20 * Math.sin(this.animationTime + i);
+                    const particleX = centerX + Math.cos(particleAngle) * particleDistance;
+                    const particleY = centerY + Math.sin(particleAngle) * particleDistance * 0.6;
+                    const particleSize = 0.5 + 0.5 * Math.sin(this.animationTime * 2 + i);
+                    
+                    ctx.beginPath();
+                    ctx.arc(particleX, particleY, particleSize, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(147, 197, 253, ${0.3 + 0.3 * Math.sin(this.animationTime * 1.5 + i)})`;
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+            
+            loadMilestoneState() {
+                if (!this.isLocalStorageAvailable) {
+                    console.log('localStorage not available, starting with fresh milestones');
+                    return;
+                }
+                
+                try {
+                    const savedData = localStorage.getItem(this.storageKey);
+                    if (savedData) {
+                        const milestoneData = JSON.parse(savedData);
+                        
+                        // Validate and restore milestone states
+                        if (milestoneData && typeof milestoneData === 'object') {
+                            Object.keys(this.milestones).forEach(key => {
+                                if (milestoneData[key] && typeof milestoneData[key].achieved === 'boolean') {
+                                    this.milestones[key].achieved = milestoneData[key].achieved;
+                                }
+                            });
+                            
+                            console.log('Milestone states restored from localStorage:', this.getMilestoneStatus());
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error loading milestone state:', e.message);
+                    // Clear corrupted data
+                    try {
+                        localStorage.removeItem(this.storageKey);
+                    } catch (clearError) {
+                        console.error('Could not clear corrupted milestone data:', clearError.message);
+                    }
+                }
+            }
+            
+            saveMilestoneState() {
+                if (!this.isLocalStorageAvailable) return;
+                
+                try {
+                    const milestoneData = {};
+                    Object.keys(this.milestones).forEach(key => {
+                        milestoneData[key] = {
+                            achieved: this.milestones[key].achieved,
+                            threshold: this.milestones[key].threshold
+                        };
+                    });
+                    
+                    milestoneData.timestamp = Date.now();
+                    milestoneData.version = '1.0';
+                    
+                    localStorage.setItem(this.storageKey, JSON.stringify(milestoneData));
+                    console.log('Milestone states saved to localStorage');
+                    
+                } catch (e) {
+                    console.error('Error saving milestone state:', e.message);
+                }
+            }
+            
+            getMilestoneStatus() {
+                const status = {};
+                Object.keys(this.milestones).forEach(key => {
+                    const milestone = this.milestones[key];
+                    status[key] = {
+                        name: milestone.name,
+                        threshold: milestone.threshold + '%',
+                        achieved: milestone.achieved
+                    };
+                });
+                return status;
+            }
+            
+            resetMilestones() {
+                // Reset all milestone states
+                Object.keys(this.milestones).forEach(key => {
+                    this.milestones[key].achieved = false;
+                });
+                
+                // Reset animation states
+                this.completionMessageShown = false;
+                this.completionGlow = 0;
+                
+                // Remove completion message if it exists
+                const existingMessage = document.getElementById('completion-message');
+                if (existingMessage && existingMessage.parentNode) {
+                    existingMessage.parentNode.removeChild(existingMessage);
+                }
+                
+                // Clear localStorage
+                if (this.isLocalStorageAvailable) {
+                    try {
+                        localStorage.removeItem(this.storageKey);
+                        console.log('Milestone states reset and localStorage cleared');
+                    } catch (e) {
+                        console.error('Error clearing milestone localStorage:', e.message);
+                    }
+                }
+                
+                console.log('All milestones reset');
+            }
+            
+            // Performance optimization method to check if there are active animations
+            hasActiveAnimations() {
+                // Check if fish are swimming (fish milestone achieved)
+                if (this.milestones.fish.achieved) {
+                    return true;
+                }
+                
+                // Check if waves are active (waves milestone achieved)
+                if (this.milestones.waves.achieved) {
+                    return true;
+                }
+                
+                // Check if completion glow is active
+                if (this.milestones.completion.achieved && this.completionGlow > 0) {
+                    return true;
+                }
+                
+                // No active animations
+                return false;
+            }
+        }
+
+        // ProgressManager class for handling progress tracking and localStorage persistence
+        class ProgressManager {
+            constructor() {
+                this.storageKey = 'water-ocean-progress';
+                this.progressElement = document.getElementById('progress-percentage');
+                this.isLocalStorageAvailable = this.checkLocalStorageAvailability();
+                this.currentProgress = 0;
+                this.animationId = null;
+                
+                // Load saved progress on initialization
+                this.loadProgress();
+                
+                console.log('ProgressManager initialized. LocalStorage available:', this.isLocalStorageAvailable, 'Initial progress:', this.currentProgress + '%');
+            }
+            
+            checkLocalStorageAvailability() {
+                try {
+                    const testKey = 'water-test-storage';
+                    localStorage.setItem(testKey, 'test');
+                    localStorage.removeItem(testKey);
+                    return true;
+                } catch (e) {
+                    console.warn('localStorage not available, using fallback behavior:', e.message);
+                    return false;
+                }
+            }
+            
+            updateProgress(waterLevel) {
+                // Calculate percentage (waterLevel is already 0-100)
+                const newProgress = Math.round(waterLevel * 10) / 10; // Round to 1 decimal place
+                
+                // Only update if progress has actually changed
+                if (newProgress !== this.currentProgress) {
+                    const oldProgress = this.currentProgress;
+                    this.currentProgress = newProgress;
+                    
+                    // Update DOM with smooth transition
+                    this.updateProgressDisplay(oldProgress, newProgress);
+                    
+                    // Save to localStorage if available
+                    this.saveProgress(waterLevel);
+                    
+                    console.log('Progress updated from', oldProgress + '%', 'to', newProgress + '%');
+                }
+            }
+            
+            updateProgressDisplay(fromProgress, toProgress) {
+                // Cancel any existing animation
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                
+                // Animate the progress counter with smooth transitions
+                const duration = 800; // 800ms animation
+                const startTime = Date.now();
+                const progressDiff = toProgress - fromProgress;
+                
+                const animateProgress = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Use easing function for smooth animation (ease-out)
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const currentValue = fromProgress + (progressDiff * easeOut);
+                    
+                    // Update the display
+                    if (this.progressElement) {
+                        this.progressElement.textContent = Math.round(currentValue * 10) / 10;
+                        
+                        // Add visual feedback for progress increases
+                        if (progressDiff > 0) {
+                            this.progressElement.style.transform = 'scale(1.05)';
+                            
+                            // Reset transform after animation but keep milestone colors
+                            setTimeout(() => {
+                                if (this.progressElement) {
+                                    this.progressElement.style.transform = '';
+                                }
+                            }, 200);
+                        }
+                        
+                        // Apply milestone-based color styling
+                        this.applyMilestoneColors(currentValue);
+                    }
+                    
+                    // Continue animation if not complete
+                    if (progress < 1) {
+                        this.animationId = requestAnimationFrame(animateProgress);
+                    } else {
+                        this.animationId = null;
+                    }
+                };
+                
+                // Start the animation
+                this.animationId = requestAnimationFrame(animateProgress);
+            }
+            
+            applyMilestoneColors(waterLevel) {
+                // Update progress counter container classes for milestone styling
+                const counterContainer = document.getElementById('progress-counter');
+                if (counterContainer) {
+                    // Remove existing milestone classes
+                    counterContainer.classList.remove('milestone-fish', 'milestone-waves', 'milestone-complete');
+                    
+                    // Add appropriate milestone class
+                    if (waterLevel >= 100) {
+                        counterContainer.classList.add('milestone-complete');
+                    } else if (waterLevel >= 70) {
+                        counterContainer.classList.add('milestone-waves');
+                    } else if (waterLevel >= 30) {
+                        counterContainer.classList.add('milestone-fish');
+                    }
+                }
+                
+                // Apply color changes based on progress milestones (fallback for older browsers)
+                if (this.progressElement) {
+                    if (waterLevel >= 100) {
+                        this.progressElement.style.color = '#67E8F9'; // cyan-300
+                        this.progressElement.style.textShadow = '0 0 10px rgba(103, 232, 249, 0.5)';
+                    } else if (waterLevel >= 70) {
+                        this.progressElement.style.color = '#67E8F9'; // cyan-300
+                        this.progressElement.style.textShadow = 'none';
+                    } else if (waterLevel >= 30) {
+                        this.progressElement.style.color = '#60A5FA'; // blue-400
+                        this.progressElement.style.textShadow = 'none';
+                    } else {
+                        this.progressElement.style.color = '#D1D5DB'; // gray-300 (default)
+                        this.progressElement.style.textShadow = 'none';
+                    }
+                }
+            }
+            
+            loadProgress() {
+                let savedWaterLevel = 0;
+                
+                if (this.isLocalStorageAvailable) {
+                    try {
+                        const savedData = localStorage.getItem(this.storageKey);
+                        if (savedData) {
+                            const progressData = JSON.parse(savedData);
+                            
+                            // Validate the saved data structure
+                            if (progressData && typeof progressData.waterLevel === 'number') {
+                                savedWaterLevel = Math.max(0, Math.min(100, progressData.waterLevel));
+                                
+                                // Log successful restoration
+                                console.log('Progress restored from localStorage:', savedWaterLevel + '%', 'Saved on:', new Date(progressData.timestamp || 0).toLocaleString());
+                            } else {
+                                console.warn('Invalid progress data structure in localStorage, starting fresh');
+                            }
+                        } else {
+                            console.log('No saved progress found, starting with empty ocean');
+                        }
+                    } catch (e) {
+                        console.error('Error loading progress from localStorage:', e.message, 'Starting fresh');
+                        // Clear corrupted data
+                        try {
+                            localStorage.removeItem(this.storageKey);
+                        } catch (clearError) {
+                            console.error('Could not clear corrupted localStorage data:', clearError.message);
+                        }
+                    }
+                } else {
+                    console.log('localStorage not available, starting with empty ocean');
+                }
+                
+                // Set initial progress
+                this.currentProgress = savedWaterLevel;
+                
+                // Update display immediately without animation
+                if (this.progressElement) {
+                    this.progressElement.textContent = Math.round(savedWaterLevel * 10) / 10;
+                    // Apply milestone colors for restored progress
+                    this.applyMilestoneColors(savedWaterLevel);
+                }
+                
+                return savedWaterLevel;
+            }
+            
+            saveProgress(waterLevel) {
+                if (!this.isLocalStorageAvailable) {
+                    return; // Silently fail if localStorage is not available
+                }
+                
+                try {
+                    const progressData = {
+                        waterLevel: waterLevel,
+                        timestamp: Date.now(),
+                        version: '1.0' // For future compatibility
+                    };
+                    
+                    localStorage.setItem(this.storageKey, JSON.stringify(progressData));
+                    
+                    // Verify the save was successful
+                    const verification = localStorage.getItem(this.storageKey);
+                    if (!verification) {
+                        throw new Error('Save verification failed');
+                    }
+                    
+                } catch (e) {
+                    console.error('Error saving progress to localStorage:', e.message);
+                    
+                    // If we hit storage quota, try to clear old data and retry
+                    if (e.name === 'QuotaExceededError') {
+                        console.warn('Storage quota exceeded, attempting to clear old data');
+                        try {
+                            // Clear our own data and retry
+                            localStorage.removeItem(this.storageKey);
+                            localStorage.setItem(this.storageKey, JSON.stringify({
+                                waterLevel: waterLevel,
+                                timestamp: Date.now(),
+                                version: '1.0'
+                            }));
+                            console.log('Progress saved successfully after clearing old data');
+                        } catch (retryError) {
+                            console.error('Failed to save progress even after clearing data:', retryError.message);
+                        }
+                    }
+                }
+            }
+            
+            getCurrentProgress() {
+                return this.currentProgress;
+            }
+            
+            // Method to reset progress (for testing or user request)
+            resetProgress() {
+                this.currentProgress = 0;
+                
+                // Update display
+                if (this.progressElement) {
+                    this.progressElement.textContent = '0';
+                }
+                
+                // Clear localStorage
+                if (this.isLocalStorageAvailable) {
+                    try {
+                        localStorage.removeItem(this.storageKey);
+                        console.log('Progress reset and localStorage cleared');
+                    } catch (e) {
+                        console.error('Error clearing localStorage during reset:', e.message);
+                    }
+                }
+                
+                return 0; // Return the reset water level
+            }
+            
+            // Test method to verify localStorage functionality
+            testLocalStorage() {
+                console.log('Testing localStorage functionality...');
+                
+                if (!this.isLocalStorageAvailable) {
+                    console.log('❌ localStorage not available');
+                    return false;
+                }
+                
+                try {
+                    // Test save
+                    const testData = { waterLevel: 42.5, timestamp: Date.now(), version: '1.0' };
+                    localStorage.setItem(this.storageKey + '-test', JSON.stringify(testData));
+                    
+                    // Test load
+                    const loaded = JSON.parse(localStorage.getItem(this.storageKey + '-test'));
+                    
+                    // Test delete
+                    localStorage.removeItem(this.storageKey + '-test');
+                    
+                    // Verify
+                    const shouldBeNull = localStorage.getItem(this.storageKey + '-test');
+                    
+                    if (loaded.waterLevel === 42.5 && shouldBeNull === null) {
+                        console.log('✅ localStorage test passed');
+                        return true;
+                    } else {
+                        console.log('❌ localStorage test failed - data integrity issue');
+                        return false;
+                    }
+                } catch (e) {
+                    console.log('❌ localStorage test failed:', e.message);
+                    return false;
+                }
+            }
+        }
+
+        // Browser compatibility and error handling utilities
+        class BrowserCompatibility {
+            constructor() {
+                this.canvasSupported = this.checkCanvasSupport();
+                this.touchSupported = this.checkTouchSupport();
+                this.localStorageSupported = this.checkLocalStorageSupport();
+                this.performanceSupported = this.checkPerformanceSupport();
+                this.requestAnimationFrameSupported = this.checkRequestAnimationFrameSupport();
+                
+                this.logCompatibilityStatus();
+            }
+            
+            checkCanvasSupport() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    return !!(canvas && ctx && typeof ctx.fillRect === 'function');
+                } catch (e) {
+                    console.error('Canvas support check failed:', e.message);
+                    return false;
+                }
+            }
+            
+            checkTouchSupport() {
+                try {
+                    return 'ontouchstart' in window || 
+                           navigator.maxTouchPoints > 0 || 
+                           navigator.msMaxTouchPoints > 0 ||
+                           (window.DocumentTouch && document instanceof DocumentTouch);
+                } catch (e) {
+                    console.error('Touch support check failed:', e.message);
+                    return false;
+                }
+            }
+            
+            checkLocalStorageSupport() {
+                try {
+                    const testKey = 'browser-compat-test';
+                    localStorage.setItem(testKey, 'test');
+                    localStorage.removeItem(testKey);
+                    return true;
+                } catch (e) {
+                    console.warn('localStorage not supported:', e.message);
+                    return false;
+                }
+            }
+            
+            checkPerformanceSupport() {
+                try {
+                    return !!(window.performance && window.performance.now);
+                } catch (e) {
+                    console.warn('Performance API not supported:', e.message);
+                    return false;
+                }
+            }
+            
+            checkRequestAnimationFrameSupport() {
+                try {
+                    return !!(window.requestAnimationFrame || 
+                             window.webkitRequestAnimationFrame || 
+                             window.mozRequestAnimationFrame || 
+                             window.oRequestAnimationFrame || 
+                             window.msRequestAnimationFrame);
+                } catch (e) {
+                    console.warn('requestAnimationFrame not supported:', e.message);
+                    return false;
+                }
+            }
+            
+            logCompatibilityStatus() {
+                console.log('🔍 Browser Compatibility Check:');
+                console.log('  Canvas API:', this.canvasSupported ? '✅' : '❌');
+                console.log('  Touch Events:', this.touchSupported ? '✅' : '❌');
+                console.log('  localStorage:', this.localStorageSupported ? '✅' : '❌');
+                console.log('  Performance API:', this.performanceSupported ? '✅' : '❌');
+                console.log('  requestAnimationFrame:', this.requestAnimationFrameSupported ? '✅' : '❌');
+                console.log('  User Agent:', navigator.userAgent);
+            }
+            
+            isFullySupported() {
+                return this.canvasSupported && this.requestAnimationFrameSupported;
+            }
+            
+            getUnsupportedFeatures() {
+                const unsupported = [];
+                if (!this.canvasSupported) unsupported.push('Canvas API');
+                if (!this.touchSupported) unsupported.push('Touch Events');
+                if (!this.localStorageSupported) unsupported.push('localStorage');
+                if (!this.performanceSupported) unsupported.push('Performance API');
+                if (!this.requestAnimationFrameSupported) unsupported.push('requestAnimationFrame');
+                return unsupported;
+            }
+        }
+        
+        class ErrorHandler {
+            constructor() {
+                this.errorCount = 0;
+                this.maxErrors = 10;
+                this.errorLog = [];
+                this.setupGlobalErrorHandling();
+            }
+            
+            setupGlobalErrorHandling() {
+                // Handle uncaught JavaScript errors
+                window.addEventListener('error', (event) => {
+                    this.logError('JavaScript Error', event.error || event.message, {
+                        filename: event.filename,
+                        lineno: event.lineno,
+                        colno: event.colno
+                    });
+                });
+                
+                // Handle unhandled promise rejections
+                window.addEventListener('unhandledrejection', (event) => {
+                    this.logError('Unhandled Promise Rejection', event.reason, {
+                        promise: event.promise
+                    });
+                });
+            }
+            
+            logError(type, error, context = {}) {
+                this.errorCount++;
+                const errorEntry = {
+                    type,
+                    message: error?.message || error,
+                    stack: error?.stack,
+                    context,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent
+                };
+                
+                this.errorLog.push(errorEntry);
+                
+                // Keep error log size manageable
+                if (this.errorLog.length > 50) {
+                    this.errorLog.shift();
+                }
+                
+                console.error(`🚨 ${type}:`, error, context);
+                
+                // If too many errors, disable interactive features
+                if (this.errorCount > this.maxErrors) {
+                    console.error('Too many errors detected, disabling interactive features');
+                    this.disableInteractiveFeatures();
+                }
+            }
+            
+            handleCanvasError(error, context = {}) {
+                this.logError('Canvas Error', error, context);
+                this.showFallbackMessage('canvas-error');
+            }
+            
+            handleStorageError(error, context = {}) {
+                this.logError('Storage Error', error, context);
+                // Storage errors are non-critical, just log them
+            }
+            
+            handleTouchError(error, context = {}) {
+                this.logError('Touch Event Error', error, context);
+                // Try to fallback to mouse events only
+            }
+            
+            disableInteractiveFeatures() {
+                try {
+                    const canvas = document.getElementById('ocean-canvas');
+                    if (canvas) {
+                        canvas.style.pointerEvents = 'none';
+                        canvas.style.opacity = '0.5';
+                    }
+                    
+                    this.showFallbackMessage('too-many-errors');
+                } catch (e) {
+                    console.error('Failed to disable interactive features:', e);
+                }
+            }
+            
+            showFallbackMessage(type) {
+                const canvasContainer = document.querySelector('.canvas-container');
+                if (!canvasContainer) return;
+                
+                // Remove existing fallback messages
+                const existingMessage = canvasContainer.querySelector('.fallback-message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+                
+                const messages = {
+                    'canvas-error': {
+                        title: 'Interactive Feature Unavailable',
+                        text: 'Your browser doesn\'t support the Canvas API required for the interactive water simulation. You can still explore the rest of the $WATER experience!',
+                        icon: '⚠️'
+                    },
+                    'too-many-errors': {
+                        title: 'Interactive Feature Disabled',
+                        text: 'The interactive simulation has been disabled due to technical issues. Please refresh the page to try again.',
+                        icon: '🔧'
+                    },
+                    'unsupported-browser': {
+                        title: 'Browser Not Fully Supported',
+                        text: 'Some features may not work properly in your browser. For the best experience, please use a modern browser like Chrome, Firefox, Safari, or Edge.',
+                        icon: '🌐'
+                    }
+                };
+                
+                const message = messages[type] || messages['canvas-error'];
+                
+                const fallbackDiv = document.createElement('div');
+                fallbackDiv.className = 'fallback-message';
+                fallbackDiv.innerHTML = `
+                    <div class="text-center p-8 text-gray-300">
+                        <div class="text-4xl mb-4">${message.icon}</div>
+                        <h3 class="text-xl font-bold mb-2 text-white">${message.title}</h3>
+                        <p class="text-sm text-gray-400 max-w-md mx-auto">${message.text}</p>
+                    </div>
+                `;
+                
+                // Hide the canvas and show the fallback message
+                const canvas = document.getElementById('ocean-canvas');
+                if (canvas) {
+                    canvas.style.display = 'none';
+                }
+                
+                canvasContainer.appendChild(fallbackDiv);
+            }
+            
+            getErrorReport() {
+                return {
+                    errorCount: this.errorCount,
+                    errors: this.errorLog.slice(-10), // Last 10 errors
+                    timestamp: new Date().toISOString()
+                };
+            }
+        }
+        
+        class TouchEventHandler {
+            constructor(canvas, callback) {
+                this.canvas = canvas;
+                this.callback = callback;
+                this.isTouch = false;
+                this.touchStartTime = 0;
+                this.touchMoved = false;
+                this.lastTouchEnd = 0;
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                try {
+                    // Mouse events
+                    this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this), { passive: false });
+                    this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), { passive: true });
+                    this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this), { passive: true });
+                    
+                    // Touch events
+                    this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+                    this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+                    this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+                    this.canvas.addEventListener('touchcancel', this.handleTouchCancel.bind(this), { passive: true });
+                    
+                    // Keyboard events for accessibility
+                    this.canvas.addEventListener('keydown', this.handleKeyDown.bind(this), { passive: false });
+                    
+                    // Prevent context menu on long press
+                    this.canvas.addEventListener('contextmenu', (e) => e.preventDefault(), { passive: false });
+                    
+                    console.log('Touch and mouse event listeners set up successfully');
+                } catch (e) {
+                    console.error('Failed to set up event listeners:', e);
+                    throw e;
+                }
+            }
+            
+            handleMouseDown(event) {
+                if (this.isTouch) return; // Ignore mouse events if touch is active
+                
+                try {
+                    event.preventDefault();
+                    const coords = this.getEventCoordinates(event);
+                    this.callback(coords.x, coords.y, 'mouse');
+                } catch (e) {
+                    console.error('Mouse down error:', e);
+                }
+            }
+            
+            handleMouseMove(event) {
+                // Mouse move is passive, no need for error handling
+            }
+            
+            handleMouseUp(event) {
+                // Mouse up is passive, no need for error handling
+            }
+            
+            handleTouchStart(event) {
+                try {
+                    this.isTouch = true;
+                    this.touchStartTime = Date.now();
+                    this.touchMoved = false;
+                    
+                    // Prevent default to avoid scrolling and zooming
+                    event.preventDefault();
+                    
+                    // Only handle single touch
+                    if (event.touches.length === 1) {
+                        const coords = this.getEventCoordinates(event.touches[0]);
+                        this.callback(coords.x, coords.y, 'touch');
+                    }
+                } catch (e) {
+                    console.error('Touch start error:', e);
+                }
+            }
+            
+            handleTouchMove(event) {
+                try {
+                    this.touchMoved = true;
+                    // Prevent scrolling during touch interaction
+                    event.preventDefault();
+                } catch (e) {
+                    console.error('Touch move error:', e);
+                }
+            }
+            
+            handleTouchEnd(event) {
+                try {
+                    event.preventDefault();
+                    
+                    // Prevent mouse events from firing after touch
+                    this.lastTouchEnd = Date.now();
+                    setTimeout(() => {
+                        this.isTouch = false;
+                    }, 300);
+                    
+                } catch (e) {
+                    console.error('Touch end error:', e);
+                }
+            }
+            
+            handleTouchCancel(event) {
+                try {
+                    this.isTouch = false;
+                    this.touchMoved = false;
+                } catch (e) {
+                    console.error('Touch cancel error:', e);
+                }
+            }
+            
+            handleKeyDown(event) {
+                try {
+                    // Handle Space and Enter keys for accessibility
+                    if (event.key === ' ' || event.key === 'Enter') {
+                        event.preventDefault();
+                        
+                        // Add droplet at center of canvas
+                        const rect = this.canvas.getBoundingClientRect();
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        
+                        this.callback(centerX, centerY, 'keyboard');
+                    }
+                } catch (e) {
+                    console.error('Keyboard event error:', e);
+                }
+            }
+            
+            getEventCoordinates(event) {
+                try {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    
+                    return {
+                        x: (event.clientX - rect.left) * scaleX,
+                        y: (event.clientY - rect.top) * scaleY
+                    };
+                } catch (e) {
+                    console.error('Error getting event coordinates:', e);
+                    // Return center coordinates as fallback
+                    return {
+                        x: this.canvas.width / 2,
+                        y: this.canvas.height / 2
+                    };
+                }
+            }
+        }
+        
+        class CanvasSizeHandler {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.minWidth = 300;
+                this.minHeight = 200;
+                this.maxWidth = 1200;
+                this.maxHeight = 800;
+                this.aspectRatio = 16 / 9; // Preferred aspect ratio
+                this.setupResizeHandler();
+                this.updateCanvasSize();
+            }
+            
+            setupResizeHandler() {
+                try {
+                    let resizeTimeout;
+                    window.addEventListener('resize', () => {
+                        clearTimeout(resizeTimeout);
+                        resizeTimeout = setTimeout(() => {
+                            this.updateCanvasSize();
+                        }, 250); // Debounce resize events
+                    });
+                    
+                    // Handle orientation change on mobile
+                    window.addEventListener('orientationchange', () => {
+                        setTimeout(() => {
+                            this.updateCanvasSize();
+                        }, 500); // Wait for orientation change to complete
+                    });
+                } catch (e) {
+                    console.error('Failed to set up resize handlers:', e);
+                }
+            }
+            
+            updateCanvasSize() {
+                try {
+                    const container = this.canvas.parentElement;
+                    if (!container) {
+                        console.error('Canvas container not found');
+                        return;
+                    }
+                    
+                    const containerRect = container.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight;
+                    const viewportWidth = window.innerWidth;
+                    
+                    // Calculate target dimensions
+                    let targetWidth = Math.min(containerRect.width, this.maxWidth);
+                    let targetHeight;
+                    
+                    // Use viewport-based height calculation
+                    if (viewportWidth <= 768) { // Mobile
+                        targetHeight = Math.min(viewportHeight * 0.45, this.maxHeight);
+                    } else if (viewportWidth <= 480) { // Very small mobile
+                        targetHeight = Math.min(viewportHeight * 0.4, this.maxHeight);
+                    } else { // Desktop
+                        targetHeight = Math.min(viewportHeight * 0.6, this.maxHeight);
+                    }
+                    
+                    // Ensure minimum dimensions
+                    targetWidth = Math.max(targetWidth, this.minWidth);
+                    targetHeight = Math.max(targetHeight, this.minHeight);
+                    
+                    // Apply size constraints
+                    if (targetWidth / targetHeight > this.aspectRatio * 1.5) {
+                        targetWidth = targetHeight * this.aspectRatio * 1.5;
+                    }
+                    
+                    // Set canvas dimensions
+                    this.canvas.width = Math.floor(targetWidth);
+                    this.canvas.height = Math.floor(targetHeight);
+                    
+                    // Update CSS dimensions to match
+                    this.canvas.style.width = targetWidth + 'px';
+                    this.canvas.style.height = targetHeight + 'px';
+                    
+                    console.log('Canvas resized to:', targetWidth + 'x' + targetHeight, 'Viewport:', viewportWidth + 'x' + viewportHeight);
+                    
+                    // Dispatch custom event for other components to handle resize
+                    const resizeEvent = new CustomEvent('canvasResize', {
+                        detail: { width: targetWidth, height: targetHeight }
+                    });
+                    this.canvas.dispatchEvent(resizeEvent);
+                    
+                } catch (e) {
+                    console.error('Error updating canvas size:', e);
+                    
+                    // Fallback to safe dimensions
+                    this.canvas.width = this.minWidth;
+                    this.canvas.height = this.minHeight;
+                    this.canvas.style.width = this.minWidth + 'px';
+                    this.canvas.style.height = this.minHeight + 'px';
+                }
+            }
+            
+            getCanvasDimensions() {
+                return {
+                    width: this.canvas.width,
+                    height: this.canvas.height,
+                    cssWidth: this.canvas.style.width,
+                    cssHeight: this.canvas.style.height
+                };
+            }
+        }
+
+        // Initialize the ocean canvas when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize browser compatibility checker
+            const browserCompat = new BrowserCompatibility();
+            const errorHandler = new ErrorHandler();
+            
+            // Check if the browser supports the required features
+            if (!browserCompat.isFullySupported()) {
+                console.warn('Browser compatibility issues detected:', browserCompat.getUnsupportedFeatures());
+                
+                if (!browserCompat.canvasSupported) {
+                    errorHandler.showFallbackMessage('canvas-error');
+                    return; // Cannot proceed without Canvas API
+                }
+                
+                if (browserCompat.getUnsupportedFeatures().length > 2) {
+                    errorHandler.showFallbackMessage('unsupported-browser');
+                }
+            }
+            
+            // Wrap initialization in try-catch for error handling
+            try {
+                // Wait a bit for the fade-in animation to start
+                setTimeout(() => {
+                    try {
+                        // Initialize ProgressManager first
+                        const progressManager = new ProgressManager();
+                
+                // Initialize canvas renderer with error handler
+                const oceanRenderer = new CanvasRenderer('ocean-canvas', errorHandler);
+                
+                // Get the water simulation engine and milestone system
+                const waterSimulation = oceanRenderer.getWaterSimulation();
+                const milestoneSystem = oceanRenderer.getMilestoneSystem();
+                const savedWaterLevel = progressManager.getCurrentProgress();
+                
+                if (savedWaterLevel > 0) {
+                    // Restore the water level in the simulation
+                    waterSimulation.setWaterLevel(savedWaterLevel);
+                    console.log('Water level restored to:', savedWaterLevel + '%');
+                    
+                    // Check milestones for restored water level
+                    milestoneSystem.checkMilestones(savedWaterLevel);
+                }
+                
+                // Connect progress manager to water simulation updates
+                // We'll override the increaseWaterLevel method to notify the progress manager
+                const originalIncreaseWaterLevel = waterSimulation.increaseWaterLevel.bind(waterSimulation);
+                waterSimulation.increaseWaterLevel = function() {
+                    originalIncreaseWaterLevel();
+                    const currentLevel = this.getWaterLevel();
+                    progressManager.updateProgress(currentLevel);
+                    // Milestone checking is handled in the render loop
+                };
+                
+                // Store references globally for potential future use and testing
+                window.oceanRenderer = oceanRenderer;
+                window.progressManager = progressManager;
+                window.waterSimulation = waterSimulation;
+                window.milestoneSystem = milestoneSystem;
+                
+                // Test localStorage functionality in development
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    progressManager.testLocalStorage();
+                }
+                
+                console.log('Ocean interactive system initialized successfully');
+                
+                // Add test functions for development and debugging
+                window.testProgressManager = function() {
+                    console.log('🧪 Testing ProgressManager functionality...');
+                    
+                    // Test 1: Basic progress update
+                    console.log('Test 1: Basic progress update');
+                    progressManager.updateProgress(25.5);
+                    
+                    setTimeout(() => {
+                        // Test 2: localStorage functionality
+                        console.log('Test 2: localStorage functionality');
+                        const testResult = progressManager.testLocalStorage();
+                        console.log('localStorage test result:', testResult);
+                        
+                        // Test 3: Progress restoration
+                        console.log('Test 3: Progress restoration simulation');
+                        const currentProgress = progressManager.getCurrentProgress();
+                        console.log('Current progress:', currentProgress + '%');
+                        
+                        // Test 4: Reset functionality
+                        setTimeout(() => {
+                            console.log('Test 4: Reset functionality');
+                            const resetLevel = progressManager.resetProgress();
+                            console.log('Progress reset to:', resetLevel + '%');
+                            
+                            // Restore original progress
+                            setTimeout(() => {
+                                progressManager.updateProgress(currentProgress);
+                                waterSimulation.setWaterLevel(currentProgress);
+                                console.log('✅ All ProgressManager tests completed');
+                            }, 1000);
+                        }, 2000);
+                    }, 1000);
+                };
+                
+                window.simulateProgress = function(targetLevel = 100) {
+                    console.log('🌊 Simulating progress to', targetLevel + '%');
+                    const currentLevel = waterSimulation.getWaterLevel();
+                    const increment = 2; // 2% per step
+                    const delay = 200; // 200ms between steps
+                    
+                    let currentStep = currentLevel;
+                    const interval = setInterval(() => {
+                        if (currentStep >= targetLevel) {
+                            clearInterval(interval);
+                            console.log('✅ Progress simulation completed at', currentStep + '%');
+                            return;
+                        }
+                        
+                        currentStep = Math.min(targetLevel, currentStep + increment);
+                        waterSimulation.setWaterLevel(currentStep);
+                        progressManager.updateProgress(currentStep);
+                        milestoneSystem.checkMilestones(currentStep);
+                    }, delay);
+                };
+                
+                window.testMilestones = function() {
+                    console.log('🎯 Testing milestone system...');
+                    console.log('Current milestone status:', milestoneSystem.getMilestoneStatus());
+                    
+                    // Test milestone progression
+                    console.log('Testing 30% milestone (fish)...');
+                    simulateProgress(35);
+                    
+                    setTimeout(() => {
+                        console.log('Testing 70% milestone (waves)...');
+                        simulateProgress(75);
+                        
+                        setTimeout(() => {
+                            console.log('Testing 100% milestone (completion)...');
+                            simulateProgress(100);
+                        }, 3000);
+                    }, 3000);
+                };
+                
+                window.resetAll = function() {
+                    console.log('🔄 Resetting all progress and milestones...');
+                    progressManager.resetProgress();
+                    milestoneSystem.resetMilestones();
+                    waterSimulation.setWaterLevel(0);
+                    console.log('✅ Everything reset to initial state');
+                };
+                
+                // Performance monitoring and testing functions
+                window.getPerformanceStats = function() {
+                    const stats = waterSimulation.getPerformanceStats();
+                    console.log('📊 Performance Statistics:');
+                    console.log('  FPS:', stats.fps);
+                    console.log('  Performance Level:', stats.performanceLevel);
+                    console.log('  Active Droplets:', stats.activeDroplets + '/' + stats.maxDroplets);
+                    console.log('  Active Splash Effects:', stats.activeSplashEffects + '/' + stats.maxSplashEffects);
+                    console.log('  Object Pool Stats:', stats.poolStats);
+                    return stats;
+                };
+                
+                window.testPerformance = function(targetFps = 15) {
+                    console.log('🔥 Testing performance scaling by simulating low FPS...');
+                    
+                    // Temporarily override frame rate monitor to simulate low performance
+                    const originalGetCurrentFps = waterSimulation.frameRateMonitor.getCurrentFps;
+                    waterSimulation.frameRateMonitor.getCurrentFps = () => targetFps;
+                    
+                    // Force performance adjustment
+                    waterSimulation.updatePerformanceScaling();
+                    
+                    console.log('Performance scaled down due to simulated', targetFps, 'FPS');
+                    getPerformanceStats();
+                    
+                    // Restore original function after 10 seconds
+                    setTimeout(() => {
+                        waterSimulation.frameRateMonitor.getCurrentFps = originalGetCurrentFps;
+                        console.log('✅ Performance test completed, restored normal monitoring');
+                    }, 10000);
+                };
+                
+                window.setPerformanceLevel = function(level) {
+                    if (level < 0.1 || level > 1.0) {
+                        console.error('Performance level must be between 0.1 and 1.0');
+                        return;
+                    }
+                    waterSimulation.setPerformanceLevel(level);
+                    getPerformanceStats();
+                };
+                
+                window.stressTest = function(duration = 5000) {
+                    console.log('💥 Starting stress test for', duration + 'ms...');
+                    const startTime = Date.now();
+                    const interval = setInterval(() => {
+                        // Add multiple droplets rapidly
+                        for (let i = 0; i < 3; i++) {
+                            const x = Math.random() * (oceanRenderer.canvas.width / (window.devicePixelRatio || 1));
+                            const y = Math.random() * 100; // Top area of canvas
+                            waterSimulation.addDroplet(x, y);
+                        }
+                        
+                        if (Date.now() - startTime > duration) {
+                            clearInterval(interval);
+                            console.log('✅ Stress test completed');
+                            getPerformanceStats();
+                        }
+                    }, 50); // Add droplets every 50ms
+                };
+                
+                // Error handling and compatibility testing functions
+                window.testBrowserCompatibility = function() {
+                    console.log('🔍 Testing browser compatibility...');
+                    const compat = window.browserCompat;
+                    console.log('Canvas API:', compat.canvasSupported ? '✅' : '❌');
+                    console.log('Touch Events:', compat.touchSupported ? '✅' : '❌');
+                    console.log('localStorage:', compat.localStorageSupported ? '✅' : '❌');
+                    console.log('Performance API:', compat.performanceSupported ? '✅' : '❌');
+                    console.log('requestAnimationFrame:', compat.requestAnimationFrameSupported ? '✅' : '❌');
+                    console.log('Fully Supported:', compat.isFullySupported() ? '✅' : '❌');
+                    
+                    const unsupported = compat.getUnsupportedFeatures();
+                    if (unsupported.length > 0) {
+                        console.warn('Unsupported features:', unsupported);
+                    }
+                    
+                    return compat;
+                };
+                
+                window.getErrorReport = function() {
+                    console.log('📋 Error Report:');
+                    const report = window.oceanErrorHandler.getErrorReport();
+                    console.log('Total Errors:', report.errorCount);
+                    console.log('Recent Errors:', report.errors);
+                    return report;
+                };
+                
+                window.testErrorHandling = function() {
+                    console.log('🚨 Testing error handling...');
+                    
+                    // Test 1: Canvas error
+                    try {
+                        throw new Error('Test canvas error');
+                    } catch (e) {
+                        window.oceanErrorHandler.handleCanvasError(e, { test: 'canvas-error' });
+                    }
+                    
+                    // Test 2: Storage error
+                    try {
+                        throw new Error('Test storage error');
+                    } catch (e) {
+                        window.oceanErrorHandler.handleStorageError(e, { test: 'storage-error' });
+                    }
+                    
+                    // Test 3: Touch error
+                    try {
+                        throw new Error('Test touch error');
+                    } catch (e) {
+                        window.oceanErrorHandler.handleTouchError(e, { test: 'touch-error' });
+                    }
+                    
+                    console.log('Error handling test completed. Check error report with getErrorReport()');
+                };
+                
+                window.simulateCanvasError = function() {
+                    console.log('💥 Simulating canvas error...');
+                    window.oceanErrorHandler.showFallbackMessage('canvas-error');
+                };
+                
+                window.testCanvasResize = function() {
+                    console.log('📐 Testing canvas resize handling...');
+                    const originalWidth = oceanRenderer.canvas.width;
+                    const originalHeight = oceanRenderer.canvas.height;
+                    
+                    // Simulate resize
+                    oceanRenderer.canvasSizeHandler.updateCanvasSize();
+                    
+                    console.log('Canvas resized from', originalWidth + 'x' + originalHeight, 
+                               'to', oceanRenderer.canvas.width + 'x' + oceanRenderer.canvas.height);
+                };
+                
+                console.log('🛠️ Development tools available:');
+                console.log('  - testProgressManager(): Test all ProgressManager functionality');
+                console.log('  - testMilestones(): Test milestone system progression');
+                console.log('  - simulateProgress(level): Simulate filling ocean to specified level');
+                console.log('  - resetAll(): Reset all progress and milestones');
+                console.log('  - milestoneSystem.getMilestoneStatus(): Get current milestone status');
+                console.log('  - progressManager.getCurrentProgress(): Get current progress');
+                console.log('  - getPerformanceStats(): Get current performance statistics');
+                console.log('  - testPerformance(targetFps): Test performance scaling with simulated low FPS');
+                console.log('  - setPerformanceLevel(level): Manually set performance level (0.1-1.0)');
+                console.log('  - stressTest(duration): Run stress test with rapid droplet creation');
+                console.log('');
+                console.log('🔧 Error handling and compatibility tools:');
+                console.log('  - testBrowserCompatibility(): Check browser feature support');
+                console.log('  - getErrorReport(): Get current error log and statistics');
+                console.log('  - testErrorHandling(): Test error handling systems');
+                console.log('  - simulateCanvasError(): Show fallback message');
+                console.log('  - testCanvasResize(): Test canvas resize handling');
+                
+                console.log('Ocean interactive system initialized successfully');
+                
+                // Store error handler and compatibility checker globally for debugging
+                window.oceanErrorHandler = errorHandler;
+                window.browserCompat = browserCompat;
+                
+            } catch (error) {
+                console.error('Failed to initialize ocean interactive system:', error);
+                errorHandler.handleCanvasError(error, { phase: 'system-initialization' });
+                errorHandler.showFallbackMessage('canvas-error');
+            }
+        }, 500);
+    } catch (error) {
+        console.error('Critical error during ocean system setup:', error);
+        // Show fallback message even if error handler failed to initialize
+        const canvasContainer = document.querySelector('.canvas-container');
+        if (canvasContainer) {
+            const canvas = document.getElementById('ocean-canvas');
+            if (canvas) canvas.style.display = 'none';
+            
+            const fallbackDiv = document.createElement('div');
+            fallbackDiv.className = 'fallback-message';
+            fallbackDiv.innerHTML = `
+                <div class="text-center p-8 text-gray-300">
+                    <div class="text-4xl mb-4">⚠️</div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Interactive Feature Unavailable</h3>
+                    <p class="text-sm text-gray-400 max-w-md mx-auto">
+                        The interactive water simulation could not be loaded. Please refresh the page or try using a different browser.
+                    </p>
+                </div>
+            `;
+            canvasContainer.appendChild(fallbackDiv);
+        }
+    }
+});
+
+    </script>
+</body>
+</html>

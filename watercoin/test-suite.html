@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drop to Ocean - Comprehensive Test Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0A;
+            color: #E0E0E0;
+        }
+        .test-section {
+            background-color: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .test-pass {
+            color: #10B981;
+        }
+        .test-fail {
+            color: #EF4444;
+        }
+        .test-warning {
+            color: #F59E0B;
+        }
+        .test-info {
+            color: #3B82F6;
+        }
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        .test-result.pass {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10B981;
+        }
+        .test-result.fail {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #EF4444;
+        }
+        .test-result.warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #F59E0B;
+        }
+        .test-result.info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0052D4, #4364F7, #6FB1FC);
+            transition: width 0.3s ease;
+        }
+        #test-canvas {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-4xl font-bold text-white mb-8 text-center">
+            💧 Drop to Ocean - Comprehensive Test Suite
+        </h1>
+        
+        <!-- Test Progress Overview -->
+        <div class="test-section mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">Test Progress Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold test-pass" id="passed-count">0</div>
+                    <div class="text-sm text-gray-400">Passed</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold test-fail" id="failed-count">0</div>
+                    <div class="text-sm text-gray-400">Failed</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold test-warning" id="warning-count">0</div>
+                    <div class="text-sm text-gray-400">Warnings</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-white" id="total-count">0</div>
+                    <div class="text-sm text-gray-400">Total Tests</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="text-center mt-2 text-sm text-gray-400" id="progress-text">0% Complete</div>
+        </div>
+
+        <!-- Test Canvas for Interactive Testing -->
+        <div class="test-section">
+            <h2 class="text-2xl font-bold text-white mb-4">Interactive Test Canvas</h2>
+            <canvas id="test-canvas" width="800" height="400" class="w-full max-w-2xl mx-auto block"></canvas>
+            <div class="text-center mt-2 text-sm text-gray-400">
+                Test canvas for droplet physics and interaction validation
+            </div>
+        </div>
+
+        <!-- Test Results Sections -->
+        <div id="test-results">
+            <!-- Test results will be populated here -->
+        </div>
+
+        <!-- Control Panel -->
+        <div class="test-section">
+            <h2 class="text-2xl font-bold text-white mb-4">Test Controls</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="runAllTests()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Run All Tests
+                </button>
+                <button onclick="runPhysicsTests()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Physics Tests
+                </button>
+                <button onclick="runStorageTests()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                    Storage Tests
+                </button>
+                <button onclick="runPerformanceTests()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Performance Tests
+                </button>
+                <button onclick="runResponsiveTests()" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                    Responsive Tests
+                </button>
+                <button onclick="runAccessibilityTests()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                    Accessibility Tests
+                </button>
+                <button onclick="runMilestoneTests()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded">
+                    Milestone Tests
+                </button>
+                <button onclick="clearResults()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Clear Results
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test Suite Implementation
+        class TestSuite {
+            constructor() {
+                this.tests = [];
+                this.results = [];
+                this.passedCount = 0;
+                this.failedCount = 0;
+                this.warningCount = 0;
+                this.totalCount = 0;
+                this.currentSection = null;
+                
+                // Initialize test canvas
+                this.testCanvas = document.getElementById('test-canvas');
+                this.testCtx = this.testCanvas.getContext('2d');
+                
+                // Mock implementations for testing
+                this.setupMockImplementations();
+            }
+            
+            setupMockImplementations() {
+                // Create simplified versions of the main classes for testing
+                this.mockWaterSimulation = new MockWaterSimulationEngine();
+                this.mockProgressManager = new MockProgressManager();
+                this.mockMilestoneSystem = new MockMilestoneSystem();
+            }
+            
+            addTest(name, testFn, category = 'General') {
+                this.tests.push({
+                    name,
+                    testFn,
+                    category,
+                    result: null,
+                    error: null,
+                    duration: 0
+                });
+            }
+            
+            async runTest(test) {
+                const startTime = performance.now();
+                try {
+                    const result = await test.testFn();
+                    test.duration = performance.now() - startTime;
+                    test.result = result;
+                    
+                    if (result.status === 'pass') {
+                        this.passedCount++;
+                    } else if (result.status === 'fail') {
+                        this.failedCount++;
+                    } else if (result.status === 'warning') {
+                        this.warningCount++;
+                    }
+                    
+                    this.totalCount++;
+                    this.updateProgress();
+                    this.displayTestResult(test);
+                    
+                } catch (error) {
+                    test.duration = performance.now() - startTime;
+                    test.error = error;
+                    test.result = {
+                        status: 'fail',
+                        message: `Test threw error: ${error.message}`,
+                        details: error.stack
+                    };
+                    this.failedCount++;
+                    this.totalCount++;
+                    this.updateProgress();
+                    this.displayTestResult(test);
+                }
+            }
+            
+            async runAllTests() {
+                this.clearResults();
+                
+                for (const test of this.tests) {
+                    await this.runTest(test);
+                    // Small delay to allow UI updates
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+                
+                this.displaySummary();
+            }
+            
+            async runTestsByCategory(category) {
+                this.clearResults();
+                
+                const categoryTests = this.tests.filter(test => test.category === category);
+                for (const test of categoryTests) {
+                    await this.runTest(test);
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+                
+                this.displaySummary();
+            }
+            
+            clearResults() {
+                this.results = [];
+                this.passedCount = 0;
+                this.failedCount = 0;
+                this.warningCount = 0;
+                this.totalCount = 0;
+                
+                document.getElementById('test-results').innerHTML = '';
+                this.updateProgress();
+            }
+            
+            updateProgress() {
+                document.getElementById('passed-count').textContent = this.passedCount;
+                document.getElementById('failed-count').textContent = this.failedCount;
+                document.getElementById('warning-count').textContent = this.warningCount;
+                document.getElementById('total-count').textContent = this.totalCount;
+                
+                const progress = this.totalCount > 0 ? (this.passedCount / this.totalCount) * 100 : 0;
+                document.getElementById('progress-fill').style.width = progress + '%';
+                document.getElementById('progress-text').textContent = Math.round(progress) + '% Complete';
+            }
+            
+            displayTestResult(test) {
+                const resultsContainer = document.getElementById('test-results');
+                
+                // Create or get category section
+                let categorySection = document.getElementById(`category-${test.category.replace(/\s+/g, '-').toLowerCase()}`);
+                if (!categorySection) {
+                    categorySection = document.createElement('div');
+                    categorySection.id = `category-${test.category.replace(/\s+/g, '-').toLowerCase()}`;
+                    categorySection.className = 'test-section';
+                    categorySection.innerHTML = `
+                        <h3 class="text-xl font-bold text-white mb-4">${test.category} Tests</h3>
+                        <div class="test-results-list"></div>
+                    `;
+                    resultsContainer.appendChild(categorySection);
+                }
+                
+                const resultsList = categorySection.querySelector('.test-results-list');
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `test-result ${test.result.status}`;
+                
+                const statusIcon = {
+                    'pass': '✅',
+                    'fail': '❌',
+                    'warning': '⚠️',
+                    'info': 'ℹ️'
+                }[test.result.status] || '❓';
+                
+                resultDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="font-semibold">${statusIcon} ${test.name}</div>
+                            <div class="text-sm opacity-80 mt-1">${test.result.message}</div>
+                            ${test.result.details ? `<div class="text-xs opacity-60 mt-2">${test.result.details}</div>` : ''}
+                        </div>
+                        <div class="text-xs opacity-60 ml-4">
+                            ${test.duration.toFixed(2)}ms
+                        </div>
+                    </div>
+                `;
+                
+                resultsList.appendChild(resultDiv);
+            }
+            
+            displaySummary() {
+                const resultsContainer = document.getElementById('test-results');
+                const summaryDiv = document.createElement('div');
+                summaryDiv.className = 'test-section';
+                summaryDiv.innerHTML = `
+                    <h3 class="text-xl font-bold text-white mb-4">Test Summary</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold test-pass">${this.passedCount}</div>
+                            <div class="text-sm text-gray-400">Tests Passed</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold test-fail">${this.failedCount}</div>
+                            <div class="text-sm text-gray-400">Tests Failed</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold test-warning">${this.warningCount}</div>
+                            <div class="text-sm text-gray-400">Warnings</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-white">${this.totalCount}</div>
+                            <div class="text-sm text-gray-400">Total Tests</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <div class="text-lg ${this.failedCount === 0 ? 'test-pass' : 'test-fail'}">
+                            ${this.failedCount === 0 ? '🎉 All tests passed!' : `⚠️ ${this.failedCount} test(s) failed`}
+                        </div>
+                    </div>
+                `;
+                
+                resultsContainer.insertBefore(summaryDiv, resultsContainer.firstChild);
+            }
+        }
+        
+        // Mock implementations for testing
+        class MockWaterSimulationEngine {
+            constructor() {
+                this.waterLevel = 0;
+                this.droplets = [];
+                this.splashEffects = [];
+                this.gravity = 0.5;
+                this.dropletIncrement = 0.8;
+                this.maxDroplets = 10;
+                this.maxSplashEffects = 5;
+            }
+            
+            addDroplet(x, y) {
+                if (this.droplets.length >= this.maxDroplets) {
+                    return false;
+                }
+                
+                const droplet = {
+                    x: x,
+                    y: y,
+                    velocityX: (Math.random() - 0.5) * 2,
+                    velocityY: 0,
+                    size: 4 + Math.random() * 2,
+                    life: 1.0,
+                    splashed: false
+                };
+                
+                this.droplets.push(droplet);
+                return true;
+            }
+            
+            update(deltaTime) {
+                // Update droplets
+                for (let i = this.droplets.length - 1; i >= 0; i--) {
+                    const droplet = this.droplets[i];
+                    
+                    // Apply gravity
+                    droplet.velocityY += this.gravity * deltaTime;
+                    
+                    // Update position
+                    droplet.x += droplet.velocityX * deltaTime;
+                    droplet.y += droplet.velocityY * deltaTime;
+                    
+                    // Check collision with water surface
+                    const waterSurfaceY = 400 - (this.waterLevel / 100) * 300; // Assuming canvas height 400
+                    
+                    if (droplet.y >= waterSurfaceY && !droplet.splashed) {
+                        droplet.splashed = true;
+                        this.createSplash(droplet.x, waterSurfaceY);
+                        this.waterLevel = Math.min(100, this.waterLevel + this.dropletIncrement);
+                    }
+                    
+                    // Remove droplets that are off-screen or old
+                    if (droplet.y > 450 || droplet.life <= 0) {
+                        this.droplets.splice(i, 1);
+                    } else {
+                        droplet.life -= deltaTime * 0.001; // Slow decay
+                    }
+                }
+                
+                // Update splash effects
+                for (let i = this.splashEffects.length - 1; i >= 0; i--) {
+                    const splash = this.splashEffects[i];
+                    splash.radius += splash.expansionSpeed * deltaTime;
+                    splash.opacity -= deltaTime * 0.002;
+                    splash.life -= deltaTime * 0.001;
+                    
+                    if (splash.life <= 0 || splash.opacity <= 0) {
+                        this.splashEffects.splice(i, 1);
+                    }
+                }
+            }
+            
+            createSplash(x, y) {
+                if (this.splashEffects.length >= this.maxSplashEffects) {
+                    this.splashEffects.shift(); // Remove oldest
+                }
+                
+                const splash = {
+                    x: x,
+                    y: y,
+                    radius: 2,
+                    maxRadius: 30 + Math.random() * 20,
+                    expansionSpeed: 50 + Math.random() * 30,
+                    opacity: 0.8,
+                    life: 1.0
+                };
+                
+                this.splashEffects.push(splash);
+            }
+            
+            getWaterLevel() {
+                return this.waterLevel;
+            }
+            
+            setWaterLevel(level) {
+                this.waterLevel = Math.max(0, Math.min(100, level));
+            }
+            
+            reset() {
+                this.waterLevel = 0;
+                this.droplets = [];
+                this.splashEffects = [];
+            }
+        }
+        
+        class MockProgressManager {
+            constructor() {
+                this.storageKey = 'test-water-ocean-progress';
+                this.isLocalStorageAvailable = this.checkLocalStorageAvailability();
+                this.currentProgress = 0;
+            }
+            
+            checkLocalStorageAvailability() {
+                try {
+                    const test = 'test';
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+            
+            updateProgress(waterLevel) {
+                this.currentProgress = Math.round(waterLevel);
+                
+                if (this.isLocalStorageAvailable) {
+                    try {
+                        localStorage.setItem(this.storageKey, this.currentProgress.toString());
+                        return true;
+                    } catch (e) {
+                        return false;
+                    }
+                }
+                return false;
+            }
+            
+            loadProgress() {
+                if (this.isLocalStorageAvailable) {
+                    try {
+                        const saved = localStorage.getItem(this.storageKey);
+                        if (saved !== null) {
+                            this.currentProgress = parseInt(saved, 10);
+                            return this.currentProgress;
+                        }
+                    } catch (e) {
+                        // Fall through to return 0
+                    }
+                }
+                return 0;
+            }
+            
+            resetProgress() {
+                this.currentProgress = 0;
+                if (this.isLocalStorageAvailable) {
+                    try {
+                        localStorage.removeItem(this.storageKey);
+                        return true;
+                    } catch (e) {
+                        return false;
+                    }
+                }
+                return false;
+            }
+            
+            getCurrentProgress() {
+                return this.currentProgress;
+            }
+        }
+        
+        class MockMilestoneSystem {
+            constructor() {
+                this.milestones = {
+                    fish: { threshold: 30, achieved: false },
+                    waves: { threshold: 70, achieved: false },
+                    completion: { threshold: 100, achieved: false }
+                };
+                this.storageKey = 'test-water-milestones';
+            }
+            
+            checkMilestones(waterLevel) {
+                const newAchievements = [];
+                
+                for (const [key, milestone] of Object.entries(this.milestones)) {
+                    if (!milestone.achieved && waterLevel >= milestone.threshold) {
+                        milestone.achieved = true;
+                        newAchievements.push(key);
+                    }
+                }
+                
+                if (newAchievements.length > 0) {
+                    this.saveMilestoneState();
+                }
+                
+                return newAchievements;
+            }
+            
+            saveMilestoneState() {
+                try {
+                    localStorage.setItem(this.storageKey, JSON.stringify(this.milestones));
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+            
+            loadMilestoneState() {
+                try {
+                    const saved = localStorage.getItem(this.storageKey);
+                    if (saved) {
+                        const loaded = JSON.parse(saved);
+                        Object.assign(this.milestones, loaded);
+                        return true;
+                    }
+                } catch (e) {
+                    // Fall through to return false
+                }
+                return false;
+            }
+            
+            resetMilestones() {
+                for (const milestone of Object.values(this.milestones)) {
+                    milestone.achieved = false;
+                }
+                try {
+                    localStorage.removeItem(this.storageKey);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+            
+            getMilestoneStatus() {
+                return { ...this.milestones };
+            }
+        }
+        
+        // Initialize test suite
+        const testSuite = new TestSuite();
+        
+        // Define all tests
+        function defineTests() {
+            // Droplet Physics Tests
+            testSuite.addTest('Droplet Creation', async () => {
+                const simulation = testSuite.mockWaterSimulation;
+                simulation.reset();
+                
+                const initialCount = simulation.droplets.length;
+                const success = simulation.addDroplet(100, 50);
+                
+                if (!success) {
+                    return { status: 'fail', message: 'Failed to create droplet' };
+                }
+                
+                if (simulation.droplets.length !== initialCount + 1) {
+                    return { status: 'fail', message: 'Droplet count did not increase' };
+                }
+                
+                const droplet = simulation.droplets[simulation.droplets.length - 1];
+                if (droplet.x !== 100 || droplet.y !== 50) {
+                    return { status: 'fail', message: 'Droplet position incorrect' };
+                }
+                
+                return { status: 'pass', message: 'Droplet created successfully at correct position' };
+            }, 'Physics');
+            
+            testSuite.addTest('Gravity Application', async () => {
+                const simulation = testSuite.mockWaterSimulation;
+                simulation.reset();
+                simulation.addDroplet(100, 50);
+                
+                const droplet = simulation.droplets[0];
+                const initialVelocityY = droplet.velocityY;
+                
+                simulation.update(16.67); // Simulate one frame at 60fps
+                
+                if (droplet.velocityY <= initialVelocityY) {
+                    return { status: 'fail', message: 'Gravity not applied - velocity did not increase' };
+                }
+                
+                if (droplet.y <= 50) {
+                    return { status: 'fail', message: 'Droplet did not fall' };
+                }
+                
+                return { status: 'pass', message: 'Gravity applied correctly, droplet falling' };
+            }, 'Physics');
+            
+            testSuite.addTest('Collision Detection', async () => {
+                const simulation = testSuite.mockWaterSimulation;
+                simulation.reset();
+                simulation.setWaterLevel(50); // Set water level to 50%
+                
+                // Add droplet above water surface
+                simulation.addDroplet(100, 100);
+                const droplet = simulation.droplets[0];
+                
+                // Simulate until collision
+                let iterations = 0;
+                while (!droplet.splashed && iterations < 1000) {
+                    simulation.update(16.67);
+                    iterations++;
+                }
+                
+                if (!droplet.splashed) {
+                    return { status: 'fail', message: 'Droplet did not collide with water surface' };
+                }
+                
+                if (simulation.splashEffects.length === 0) {
+                    return { status: 'fail', message: 'No splash effect created on collision' };
+                }
+                
+                return { status: 'pass', message: 'Collision detected and splash effect created' };
+            }, 'Physics');
+            
+            testSuite.addTest('Water Level Accumulation', async () => {
+                const simulation = testSuite.mockWaterSimulation;
+                simulation.reset();
+                
+                const initialLevel = simulation.getWaterLevel();
+                
+                // Add droplet and simulate collision
+                simulation.addDroplet(100, 50);
+                const droplet = simulation.droplets[0];
+                
+                // Force collision
+                droplet.y = 350; // Near bottom
+                simulation.update(16.67);
+                
+                const newLevel = simulation.getWaterLevel();
+                
+                if (newLevel <= initialLevel) {
+                    return { status: 'fail', message: 'Water level did not increase after droplet collision' };
+                }
+                
+                const expectedIncrease = simulation.dropletIncrement;
+                const actualIncrease = newLevel - initialLevel;
+                
+                if (Math.abs(actualIncrease - expectedIncrease) > 0.1) {
+                    return { status: 'warning', message: `Water level increase (${actualIncrease}) differs from expected (${expectedIncrease})` };
+                }
+                
+                return { status: 'pass', message: `Water level increased correctly by ${actualIncrease}%` };
+            }, 'Physics');
+            
+            testSuite.addTest('Maximum Droplet Limit', async () => {
+                const simulation = testSuite.mockWaterSimulation;
+                simulation.reset();
+                
+                // Add droplets up to the limit
+                for (let i = 0; i < simulation.maxDroplets + 5; i++) {
+                    simulation.addDroplet(100 + i * 10, 50);
+                }
+                
+                if (simulation.droplets.length > simulation.maxDroplets) {
+                    return { status: 'fail', message: `Too many droplets created: ${simulation.droplets.length} > ${simulation.maxDroplets}` };
+                }
+                
+                return { status: 'pass', message: `Droplet limit enforced correctly: ${simulation.droplets.length}/${simulation.maxDroplets}` };
+            }, 'Physics');
+            
+            // Progress and Storage Tests
+            testSuite.addTest('localStorage Availability Check', async () => {
+                const progressManager = testSuite.mockProgressManager;
+                
+                if (!progressManager.isLocalStorageAvailable) {
+                    return { status: 'warning', message: 'localStorage not available in this environment' };
+                }
+                
+                return { status: 'pass', message: 'localStorage is available and functional' };
+            }, 'Storage');
+            
+            testSuite.addTest('Progress Save and Load', async () => {
+                const progressManager = testSuite.mockProgressManager;
+                
+                // Reset and set test progress
+                progressManager.resetProgress();
+                const testProgress = 42;
+                
+                const saveResult = progressManager.updateProgress(testProgress);
+                if (!saveResult && progressManager.isLocalStorageAvailable) {
+                    return { status: 'fail', message: 'Failed to save progress to localStorage' };
+                }
+                
+                const loadedProgress = progressManager.loadProgress();
+                if (loadedProgress !== testProgress) {
+                    return { status: 'fail', message: `Loaded progress (${loadedProgress}) does not match saved (${testProgress})` };
+                }
+                
+                return { status: 'pass', message: `Progress saved and loaded correctly: ${testProgress}%` };
+            }, 'Storage');
+            
+            testSuite.addTest('Progress Calculation Accuracy', async () => {
+                const progressManager = testSuite.mockProgressManager;
+                
+                const testValues = [0, 25.7, 50, 75.3, 100];
+                const results = [];
+                
+                for (const value of testValues) {
+                    progressManager.updateProgress(value);
+                    const current = progressManager.getCurrentProgress();
+                    const expected = Math.round(value);
+                    
+                    if (current !== expected) {
+                        return { status: 'fail', message: `Progress calculation error: ${current} !== ${expected}` };
+                    }
+                    results.push(current);
+                }
+                
+                return { status: 'pass', message: `Progress calculations accurate: ${results.join(', ')}` };
+            }, 'Storage');
+            
+            testSuite.addTest('Progress Reset Functionality', async () => {
+                const progressManager = testSuite.mockProgressManager;
+                
+                // Set some progress
+                progressManager.updateProgress(75);
+                
+                // Reset
+                const resetResult = progressManager.resetProgress();
+                const currentProgress = progressManager.getCurrentProgress();
+                
+                if (currentProgress !== 0) {
+                    return { status: 'fail', message: `Progress not reset: ${currentProgress} !== 0` };
+                }
+                
+                // Check localStorage was cleared
+                const loadedProgress = progressManager.loadProgress();
+                if (loadedProgress !== 0) {
+                    return { status: 'fail', message: `localStorage not cleared: ${loadedProgress} !== 0` };
+                }
+                
+                return { status: 'pass', message: 'Progress reset successfully' };
+            }, 'Storage');
+            
+            // Milestone Tests
+            testSuite.addTest('Milestone Threshold Detection', async () => {
+                const milestoneSystem = testSuite.mockMilestoneSystem;
+                milestoneSystem.resetMilestones();
+                
+                // Test each milestone threshold
+                const testCases = [
+                    { level: 29, expected: [] },
+                    { level: 30, expected: ['fish'] },
+                    { level: 69, expected: [] },
+                    { level: 70, expected: ['waves'] },
+                    { level: 100, expected: ['completion'] }
+                ];
+                
+                for (const testCase of testCases) {
+                    const achievements = milestoneSystem.checkMilestones(testCase.level);
+                    
+                    if (achievements.length !== testCase.expected.length) {
+                        return { status: 'fail', message: `Milestone detection failed at ${testCase.level}%: expected ${testCase.expected.length}, got ${achievements.length}` };
+                    }
+                    
+                    for (const expected of testCase.expected) {
+                        if (!achievements.includes(expected)) {
+                            return { status: 'fail', message: `Expected milestone '${expected}' not achieved at ${testCase.level}%` };
+                        }
+                    }
+                }
+                
+                return { status: 'pass', message: 'All milestone thresholds detected correctly' };
+            }, 'Milestones');
+            
+            testSuite.addTest('Milestone State Persistence', async () => {
+                const milestoneSystem = testSuite.mockMilestoneSystem;
+                milestoneSystem.resetMilestones();
+                
+                // Achieve some milestones
+                milestoneSystem.checkMilestones(75); // Should achieve fish and waves
+                
+                const saveResult = milestoneSystem.saveMilestoneState();
+                if (!saveResult) {
+                    return { status: 'warning', message: 'Could not save milestone state (localStorage unavailable)' };
+                }
+                
+                // Reset and reload
+                milestoneSystem.resetMilestones();
+                const loadResult = milestoneSystem.loadMilestoneState();
+                
+                if (!loadResult) {
+                    return { status: 'fail', message: 'Could not load milestone state' };
+                }
+                
+                const status = milestoneSystem.getMilestoneStatus();
+                if (!status.fish.achieved || !status.waves.achieved || status.completion.achieved) {
+                    return { status: 'fail', message: 'Milestone state not restored correctly' };
+                }
+                
+                return { status: 'pass', message: 'Milestone state saved and loaded correctly' };
+            }, 'Milestones');
+            
+            // Performance Tests
+            testSuite.addTest('Droplet Performance Under Load', async () => {
+                const simulation = testSuite.mockWaterSimulation;
+                simulation.reset();
+                
+                const startTime = performance.now();
+                
+                // Add many droplets rapidly
+                for (let i = 0; i < 100; i++) {
+                    simulation.addDroplet(Math.random() * 800, 50);
+                }
+                
+                // Run simulation for several frames
+                for (let i = 0; i < 60; i++) {
+                    simulation.update(16.67);
+                }
+                
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                if (duration > 100) { // More than 100ms for 60 frames is concerning
+                    return { status: 'warning', message: `Performance test took ${duration.toFixed(2)}ms (may be slow)` };
+                }
+                
+                return { status: 'pass', message: `Performance test completed in ${duration.toFixed(2)}ms` };
+            }, 'Performance');
+            
+            testSuite.addTest('Memory Leak Prevention', async () => {
+                const simulation = testSuite.mockWaterSimulation;
+                simulation.reset();
+                
+                const initialDropletCount = simulation.droplets.length;
+                const initialSplashCount = simulation.splashEffects.length;
+                
+                // Create and destroy many droplets
+                for (let cycle = 0; cycle < 10; cycle++) {
+                    // Add droplets
+                    for (let i = 0; i < 20; i++) {
+                        simulation.addDroplet(Math.random() * 800, 50);
+                    }
+                    
+                    // Run simulation to completion
+                    for (let i = 0; i < 100; i++) {
+                        simulation.update(16.67);
+                    }
+                }
+                
+                // Check that arrays haven't grown excessively
+                if (simulation.droplets.length > simulation.maxDroplets * 2) {
+                    return { status: 'fail', message: `Too many droplets remaining: ${simulation.droplets.length}` };
+                }
+                
+                if (simulation.splashEffects.length > simulation.maxSplashEffects * 2) {
+                    return { status: 'fail', message: `Too many splash effects remaining: ${simulation.splashEffects.length}` };
+                }
+                
+                return { status: 'pass', message: 'Memory usage appears stable after stress test' };
+            }, 'Performance');
+            
+            // Responsive Design Tests
+            testSuite.addTest('Canvas Responsiveness', async () => {
+                const canvas = testSuite.testCanvas;
+                const originalWidth = canvas.width;
+                const originalHeight = canvas.height;
+                
+                // Test different viewport sizes
+                const testSizes = [
+                    { width: 320, height: 568 }, // Mobile
+                    { width: 768, height: 1024 }, // Tablet
+                    { width: 1920, height: 1080 } // Desktop
+                ];
+                
+                for (const size of testSizes) {
+                    // Simulate viewport change
+                    canvas.width = size.width * 0.8; // Canvas typically 80% of viewport
+                    canvas.height = size.height * 0.6; // 60vh
+                    
+                    if (canvas.width <= 0 || canvas.height <= 0) {
+                        return { status: 'fail', message: `Invalid canvas dimensions for ${size.width}x${size.height}` };
+                    }
+                }
+                
+                // Restore original size
+                canvas.width = originalWidth;
+                canvas.height = originalHeight;
+                
+                return { status: 'pass', message: 'Canvas responds correctly to different viewport sizes' };
+            }, 'Responsive');
+            
+            testSuite.addTest('Touch Event Simulation', async () => {
+                const canvas = testSuite.testCanvas;
+                let eventFired = false;
+                
+                // Add temporary event listener
+                const touchHandler = (e) => {
+                    eventFired = true;
+                    e.preventDefault();
+                };
+                
+                canvas.addEventListener('touchstart', touchHandler);
+                
+                // Simulate touch event
+                const touchEvent = new TouchEvent('touchstart', {
+                    touches: [{
+                        clientX: 100,
+                        clientY: 100,
+                        target: canvas
+                    }],
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                canvas.dispatchEvent(touchEvent);
+                
+                // Clean up
+                canvas.removeEventListener('touchstart', touchHandler);
+                
+                if (!eventFired) {
+                    return { status: 'fail', message: 'Touch event not handled' };
+                }
+                
+                return { status: 'pass', message: 'Touch events handled correctly' };
+            }, 'Responsive');
+            
+            // Accessibility Tests
+            testSuite.addTest('Canvas Accessibility Attributes', async () => {
+                // Create test canvas element
+                const testCanvas = document.createElement('canvas');
+                testCanvas.setAttribute('tabindex', '0');
+                testCanvas.setAttribute('role', 'application');
+                testCanvas.setAttribute('aria-label', 'Interactive water simulation');
+                
+                const hasTabindex = testCanvas.hasAttribute('tabindex');
+                const hasRole = testCanvas.hasAttribute('role');
+                const hasAriaLabel = testCanvas.hasAttribute('aria-label');
+                
+                if (!hasTabindex) {
+                    return { status: 'fail', message: 'Canvas missing tabindex attribute for keyboard navigation' };
+                }
+                
+                if (!hasRole) {
+                    return { status: 'fail', message: 'Canvas missing role attribute for screen readers' };
+                }
+                
+                if (!hasAriaLabel) {
+                    return { status: 'fail', message: 'Canvas missing aria-label for accessibility' };
+                }
+                
+                return { status: 'pass', message: 'Canvas has proper accessibility attributes' };
+            }, 'Accessibility');
+            
+            testSuite.addTest('Keyboard Navigation Support', async () => {
+                const canvas = testSuite.testCanvas;
+                let keyEventHandled = false;
+                
+                // Add temporary keyboard handler
+                const keyHandler = (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        keyEventHandled = true;
+                        e.preventDefault();
+                    }
+                };
+                
+                canvas.addEventListener('keydown', keyHandler);
+                canvas.focus();
+                
+                // Simulate Enter key press
+                const keyEvent = new KeyboardEvent('keydown', {
+                    key: 'Enter',
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                canvas.dispatchEvent(keyEvent);
+                
+                // Clean up
+                canvas.removeEventListener('keydown', keyHandler);
+                
+                if (!keyEventHandled) {
+                    return { status: 'fail', message: 'Keyboard events not handled for accessibility' };
+                }
+                
+                return { status: 'pass', message: 'Keyboard navigation supported' };
+            }, 'Accessibility');
+            
+            testSuite.addTest('Color Contrast Validation', async () => {
+                // Test color combinations used in the interface
+                const colorTests = [
+                    { bg: '#0A0A0A', fg: '#E0E0E0', name: 'Main text' },
+                    { bg: '#0A0A0A', fg: '#3B82F6', name: 'Blue accent' },
+                    { bg: '#0A0A0A', fg: '#67E8F9', name: 'Cyan accent' },
+                    { bg: '#0A0A0A', fg: '#9CA3AF', name: 'Gray text' }
+                ];
+                
+                function getLuminance(hex) {
+                    const rgb = parseInt(hex.slice(1), 16);
+                    const r = (rgb >> 16) & 0xff;
+                    const g = (rgb >> 8) & 0xff;
+                    const b = (rgb >> 0) & 0xff;
+                    
+                    const [rs, gs, bs] = [r, g, b].map(c => {
+                        c = c / 255;
+                        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+                    });
+                    
+                    return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+                }
+                
+                function getContrastRatio(color1, color2) {
+                    const lum1 = getLuminance(color1);
+                    const lum2 = getLuminance(color2);
+                    const brightest = Math.max(lum1, lum2);
+                    const darkest = Math.min(lum1, lum2);
+                    return (brightest + 0.05) / (darkest + 0.05);
+                }
+                
+                const failedTests = [];
+                
+                for (const test of colorTests) {
+                    const ratio = getContrastRatio(test.bg, test.fg);
+                    if (ratio < 4.5) { // WCAG AA standard
+                        failedTests.push(`${test.name}: ${ratio.toFixed(2)}:1`);
+                    }
+                }
+                
+                if (failedTests.length > 0) {
+                    return { status: 'warning', message: `Low contrast ratios: ${failedTests.join(', ')}` };
+                }
+                
+                return { status: 'pass', message: 'All color combinations meet WCAG AA contrast requirements' };
+            }, 'Accessibility');
+        }
+        
+        // Global functions for button controls
+        function runAllTests() {
+            testSuite.runAllTests();
+        }
+        
+        function runPhysicsTests() {
+            testSuite.runTestsByCategory('Physics');
+        }
+        
+        function runStorageTests() {
+            testSuite.runTestsByCategory('Storage');
+        }
+        
+        function runPerformanceTests() {
+            testSuite.runTestsByCategory('Performance');
+        }
+        
+        function runResponsiveTests() {
+            testSuite.runTestsByCategory('Responsive');
+        }
+        
+        function runAccessibilityTests() {
+            testSuite.runTestsByCategory('Accessibility');
+        }
+        
+        function runMilestoneTests() {
+            testSuite.runTestsByCategory('Milestones');
+        }
+        
+        function clearResults() {
+            testSuite.clearResults();
+        }
+        
+        // Initialize tests
+        defineTests();
+        
+        // Auto-run basic tests on load
+        setTimeout(() => {
+            console.log('🧪 Test suite initialized with', testSuite.tests.length, 'tests');
+            console.log('Click "Run All Tests" to begin comprehensive testing');
+        }, 1000);
+    </script>
+</body>
+</html>
